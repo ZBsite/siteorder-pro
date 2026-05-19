@@ -229,7 +229,7 @@ def create_order():
 def get_order(order_id):
     conn = get_db()
     c = conn.cursor()
-    c.execute("SELECT * FROM orders WHERE id=?", (order_id,))
+    c.execute("SELECT o.*, jf.name as folder_name, jf.color as folder_color FROM orders o LEFT JOIN job_folders jf ON o.folder_id=jf.id WHERE o.id=?", (order_id,))
     order = c.fetchone()
     if not order: return jsonify({'error':'Not found'}), 404
     order = dict(order)

@@ -238,6 +238,12 @@ textarea.form-control{resize:vertical;}
           <a href="/api/import/template/excel" class="btn btn-outline btn-sm"><i class="fas fa-download"></i> Download Template</a>
         </div>
         <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px;">Upload an <strong>Excel (.xlsx)</strong> or <strong>PDF</strong> file. MTECH Material Requisition forms are auto-detected.</p>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label class="form-label"><i class="fas fa-folder" style="color:var(--accent)"></i> Assign to Job Folder (optional)</label>
+          <select class="form-control" id="import_folder_id">
+            <option value="">No Folder</option>
+          </select>
+        </div>
         <div id="importDropZone" style="border:2px dashed var(--border);border-radius:12px;padding:36px;text-align:center;cursor:pointer;background:#fafbfc;" onclick="document.getElementById('importFileInput').click()" ondragover="event.preventDefault()" ondrop="handleImportDrop(event)">
           <i class="fas fa-cloud-upload-alt" style="font-size:2.5rem;color:var(--muted);margin-bottom:10px;display:block;"></i>
           <div style="font-weight:600;margin-bottom:4px;">Drag & drop your file here</div>
@@ -582,6 +588,7 @@ function showPage(page) {
   else if (page === 'orders') loadOrders();
   else if (page === 'backorders') loadBackorders();
   else if (page === 'folders') loadFolders();
+  else if (page === 'import') loadFolders();
 }
 function toggleSidebar() {
   document.getElementById('sidebar').classList.toggle('open');
@@ -773,7 +780,14 @@ async function submitNewOrder() {
 
 // DELIVERY
 async function openDeliveryModal(orderId) {
-  var o = await fetch('/api/orders/'+orderId).then(function(r){ return r.json(); });
+  var o;
+  try {
+    o = await fetch('/api/orders/'+orderId).then(function(r){ return r.json(); });
+  } catch(e) {
+    alert('Error loading order: ' + e.message);
+    return;
+  }
+  if (o.error) { alert('Order not found: ' + o.error); return; }
   document.getElementById('del_order_id').value = orderId;
   document.getElementById('del_date').value = new Date().toISOString().split('T')[0];
   document.getElementById('del_received_by').value = '';
@@ -898,7 +912,11 @@ function removeImportRow(idx) { importedOrders.splice(idx,1); if(!importedOrders
 function resetImport() { importedOrders=[]; document.getElementById('importFileInput').value=''; document.getElementById('importPreview').style.display='none'; document.getElementById('importAlert').innerHTML=''; document.getElementById('importSpinner').style.display='none'; }
 async function confirmImport() {
   if (!importedOrders.length) return;
-  var res = await fetch('/api/import/confirm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orders:importedOrders})}).then(function(r){ return r.json(); });
+  var folderEl = document.getElementById('import_folder_id');
+  var folderId = folderEl ? (folderEl.value || null) : null;
+  // Assign folder to all imported orders
+  var ordersToImport = importedOrders.map(function(o){ return Object.assign({}, o, {folder_id: folderId}); });
+  var res = await fetch('/api/import/confirm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orders:ordersToImport})}).then(function(r){ return r.json(); });
   if (res.success) { document.getElementById('importAlert').innerHTML='<div class="alert alert-success"><i class="fas fa-check-circle"></i> Imported '+res.created+' order(s)!</div>'; resetImport(); setTimeout(function(){ showPage('orders'); },1800); }
   else { document.getElementById('importAlert').innerHTML='<div class="alert alert-danger">'+res.error+'</div>'; }
 }
@@ -1034,9 +1052,11 @@ function populateFolderDropdowns(folders) {
   var noEl = document.getElementById('no_folder_id');
   var ffEl = document.getElementById('folderFilter');
   var mfEl = document.getElementById('mf_folder_id');
+  var impEl = document.getElementById('import_folder_id');
   if (noEl) noEl.innerHTML = opts;
   if (ffEl) ffEl.innerHTML = '<option value="">All Folders</option>' + folders.map(function(f){ return '<option value="'+f.id+'">'+f.name+'</option>'; }).join('');
   if (mfEl) mfEl.innerHTML = '<option value="">— No Folder —</option>' + folders.map(function(f){ return '<option value="'+f.id+'">'+f.name+(f.job_number?' ('+f.job_number+')':'')+'</option>'; }).join('');
+  if (impEl) impEl.innerHTML = opts;
 }
 async function openFolderDetail(folderId) {
   currentFolderId = folderId;

@@ -725,9 +725,9 @@ def save_imported_orders(orders_data):
     for order in orders_data:
         if not order.get('supplier_name') or not order.get('items'): skipped += 1; continue
         order_number = generate_order_number(conn)
-        c.execute('INSERT INTO orders (order_number,supplier_name,site_location,ordered_by,order_date,expected_delivery,status,notes) VALUES (?,?,?,?,?,?,?,?)',
+        c.execute('INSERT INTO orders (order_number,supplier_name,site_location,ordered_by,order_date,expected_delivery,status,notes,folder_id) VALUES (?,?,?,?,?,?,?,?,?)',
                   (order_number,order['supplier_name'],order.get('site_location',''),order.get('ordered_by',''),
-                   order['order_date'],order.get('expected_delivery',''),'Pending',order.get('notes','')))
+                   order['order_date'],order.get('expected_delivery',''),'Pending',order.get('notes',''),order.get('folder_id')))
         order_id = c.lastrowid
         for item in order['items']:
             c.execute('INSERT INTO order_items (order_id,item_name,description,quantity_ordered,quantity_received,unit,unit_price,status) VALUES (?,?,?,?,0,?,?,?)',

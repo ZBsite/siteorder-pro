@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SiteOrder Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<style>
+:root{
+  --primary:#1e3a5f;--primary-light:#2d5a8e;
+  --accent:#f59e0b;--accent-light:#fbbf24;
+  --success:#10b981;--warning:#f59e0b;--danger:#ef4444;--info:#3b82f6;--partial:#8b5cf6;
+  --bg:#f0f4f8;--card:#ffffff;--border:#e2e8f0;--text:#1e293b;--muted:#64748b;
+  --sidebar-w:240px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+.sidebar{width:var(--sidebar-w);background:var(--primary);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:.3s;overflow-y:auto;}
+.sidebar-logo{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.sidebar-logo i{font-size:1.6rem;color:var(--accent);}
+.sidebar-logo span{font-size:1.1rem;font-weight:700;line-height:1.2;}
+.sidebar-logo small{display:block;font-size:.65rem;opacity:.6;font-weight:400;}
+.nav-section{padding:12px 0 4px;font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;opacity:.5;padding-left:16px;flex-shrink:0;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;transition:.2s;font-size:.88rem;border-left:3px solid transparent;}
+.nav-item:hover{background:rgba(255,255,255,.08);}
+.nav-item.active{background:rgba(255,255,255,.12);border-left-color:var(--accent);color:var(--accent-light);}
+.nav-item i{width:18px;text-align:center;font-size:.9rem;}
+.sidebar-footer{margin-top:auto;padding:16px;border-top:1px solid rgba(255,255,255,.1);font-size:.75rem;opacity:.5;flex-shrink:0;}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-title{font-size:1.1rem;font-weight:600;color:var(--primary);}
+.content{padding:24px;flex:1;}
+.card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:16px;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.card-title{font-size:1rem;font-weight:600;color:var(--primary);}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;}
+.stat-card{background:var(--card);border-radius:12px;padding:16px;border:1px solid var(--border);display:flex;flex-direction:column;gap:6px;}
+.stat-card .icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+.stat-card .value{font-size:1.8rem;font-weight:700;line-height:1;}
+.stat-card .label{font-size:.75rem;color:var(--muted);}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:.85rem;font-weight:500;transition:.2s;text-decoration:none;}
+.btn-primary{background:var(--primary);color:#fff;}.btn-primary:hover{background:var(--primary-light);}
+.btn-accent{background:var(--accent);color:#fff;}.btn-accent:hover{background:var(--accent-light);}
+.btn-success{background:var(--success);color:#fff;}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}.btn-outline:hover{background:var(--bg);}
+.btn-sm{padding:5px 10px;font-size:.78rem;}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600;}
+.badge-pending{background:#fef3c7;color:#92400e;}
+.badge-delivered{background:#d1fae5;color:#065f46;}
+.badge-partial{background:#ede9fe;color:#5b21b6;}
+.badge-backordered{background:#fee2e2;color:#991b1b;}
+.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;font-size:.85rem;}
+thead th{background:var(--primary);color:#fff;padding:11px 14px;text-align:left;font-weight:500;font-size:.78rem;white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--border);transition:.15s;}
+tbody tr:hover{background:#f8fafc;}
+tbody td{padding:11px 14px;vertical-align:middle;}
+tbody tr:last-child{border-bottom:none;}
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-size:.8rem;font-weight:500;margin-bottom:5px;color:var(--text);}
+.form-control{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:.88rem;font-family:inherit;transition:.2s;background:#fff;}
+.form-control:focus{outline:none;border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(45,90,142,.1);}
+textarea.form-control{resize:vertical;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:700px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1;}
+.modal-title{font-size:1.05rem;font-weight:600;color:var(--primary);}
+.modal-body{padding:20px 24px;}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;}
+.items-table{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:8px;}
+.items-table th{background:#f1f5f9;padding:8px 10px;text-align:left;font-weight:500;border:1px solid var(--border);}
+.items-table td{padding:7px 10px;border:1px solid var(--border);}
+.items-table input,.items-table select{width:100%;border:none;background:transparent;font-size:.82rem;font-family:inherit;padding:2px;}
+.items-table input:focus,.items-table select:focus{outline:none;}
+.search-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
+.search-bar .form-control{max-width:220px;}
+.progress{background:#e2e8f0;border-radius:99px;height:6px;overflow:hidden;}
+.progress-bar{height:100%;border-radius:99px;transition:.3s;}
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:20px;}
+.tab{padding:9px 16px;cursor:pointer;font-size:.88rem;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:.2s;}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);}
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:4px;font-size:1.3rem;color:var(--primary);}
+.empty-state{text-align:center;padding:48px 24px;color:var(--muted);}
+.empty-state i{font-size:3rem;margin-bottom:12px;opacity:.3;display:block;}
+.alert{padding:12px 16px;border-radius:8px;font-size:.85rem;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.alert-success{background:#d1fae5;color:#065f46;}
+.alert-danger{background:#fee2e2;color:#991b1b;}
+.delivery-item{background:#f8fafc;border-radius:8px;padding:12px;margin-bottom:8px;border-left:3px solid var(--success);}
+.delivery-item .meta{font-size:.75rem;color:var(--muted);margin-bottom:4px;}
+.overlay-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;}
+.overlay-bg.open{display:block;}
+.section-page{display:none;}
+.section-page.active{display:block;}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.85rem;}
+.detail-grid .dl{display:flex;flex-direction:column;gap:2px;}
+.detail-grid .dt{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.detail-grid .dd{font-weight:500;}
+.recv-input{width:70px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:.82rem;text-align:center;}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .hamburger{display:block;}
+  .form-row,.form-row-3{grid-template-columns:1fr;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+  .topbar{padding:0 16px;}
+  .content{padding:16px;}
+  .detail-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="overlay-bg" id="overlayBg" onclick="closeSidebar()"></div>
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <i class="fas fa-hard-hat"></i>
+    <div><span>SiteOrder Pro</span><small>Construction Tracker</small></div>
+  </div>
+  <div class="nav-section">Main</div>
+  <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</div>
+  <div class="nav-item" data-page="orders" onclick="showPage('orders')"><i class="fas fa-clipboard-list"></i> All Orders</div>
+  <div class="nav-item" data-page="backorders" onclick="showPage('backorders')"><i class="fas fa-exclamation-triangle"></i> Back Orders</div>
+  <div class="nav-section">Actions</div>
+  <div class="nav-item" onclick="openNewOrderModal()"><i class="fas fa-plus-circle"></i> New Order</div>
+  <div class="nav-item" data-page="export" onclick="showPage('export')"><i class="fas fa-file-export"></i> Export</div>
+  <div class="nav-item" data-page="import" onclick="showPage('import')"><i class="fas fa-file-import"></i> Import</div>
+  <div class="nav-section">Job Folders</div>
+  <div class="nav-item" data-page="folders" onclick="showPage('folders')"><i class="fas fa-folder-open"></i> Manage Folders</div>
+  <div id="folderNavList"></div>
+  <div class="sidebar-footer">SiteOrder Pro v1.0</div>
+</nav>
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <span class="topbar-title" id="topbarTitle">Dashboard</span>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-accent btn-sm" onclick="openNewOrderModal()"><i class="fas fa-plus"></i> New Order</button>
+    </div>
+  </div>
+  <div class="content">
+    <!-- DASHBOARD -->
+    <div class="section-page active" id="page-dashboard">
+      <div class="stats-grid" id="statsGrid"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;flex-wrap:wrap;">
+        <div class="card">
+          <div class="card-header"><span class="card-title"><i class="fas fa-clock" style="color:var(--warning)"></i> Pending / Active Orders</span></div>
+          <div id="upcomingList"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title"><i class="fas fa-truck" style="color:var(--info)"></i> Orders by Supplier</span></div>
+          <div id="supplierList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="section-page" id="page-orders">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">All Orders</span>
+          <button class="btn btn-primary btn-sm" onclick="openNewOrderModal()"><i class="fas fa-plus"></i> New Order</button>
+        </div>
+        <div class="search-bar">
+          <input class="form-control" id="searchInput" placeholder="Search orders, suppliers..." oninput="filterOrders()"/>
+          <select class="form-control" id="statusFilter" onchange="filterOrders()" style="max-width:160px;">
+            <option value="">All Statuses</option>
+            <option>Pending</option><option>Partial</option><option>Delivered</option><option>Backordered</option>
+          </select>
+          <select class="form-control" id="siteFilter" onchange="filterOrders()" style="max-width:180px;">
+            <option value="">All Sites</option>
+          </select>
+          <select class="form-control" id="folderFilter" onchange="filterOrders()" style="max-width:180px;">
+            <option value="">All Folders</option>
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="loadOrders()"><i class="fas fa-sync"></i></button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Order #</th><th>Folder</th><th>Supplier</th><th>Site</th><th>Ordered By</th>
+              <th>Order Date</th><th>Exp. Delivery</th><th>Status</th><th>Items</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="ordersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- BACKORDERS -->
+    <div class="section-page" id="page-backorders">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title"><i class="fas fa-exclamation-triangle" style="color:var(--danger)"></i> Back Orders & Pending Items</span>
+          <button class="btn btn-outline btn-sm" onclick="loadBackorders()"><i class="fas fa-sync"></i> Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Order #</th><th>Supplier</th><th>Site</th><th>Item</th><th>Ordered</th>
+              <th>Received</th><th>Outstanding</th><th>Progress</th><th>Exp. Delivery</th><th>Status</th>
+            </tr></thead>
+            <tbody id="backordersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPORT -->
+    <div class="section-page" id="page-export">
+      <div class="card" style="max-width:500px;">
+        <div class="card-header"><span class="card-title"><i class="fas fa-file-export"></i> Export Orders</span></div>
+        <div class="form-group">
+          <label class="form-label">Filter by Status (optional)</label>
+          <select class="form-control" id="exportStatus">
+            <option value="">All Orders</option>
+            <option>Pending</option><option>Partial</option><option>Delivered</option><option>Backordered</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
+          <button class="btn btn-success" onclick="exportFile('csv')"><i class="fas fa-file-csv"></i> Export CSV</button>
+          <button class="btn btn-danger" onclick="exportFile('pdf')"><i class="fas fa-file-pdf"></i> Export PDF</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMPORT -->
+    <div class="section-page" id="page-import">
+      <div class="card" style="max-width:640px;">
+        <div class="card-header">
+          <span class="card-title"><i class="fas fa-file-import" style="color:var(--info)"></i> Import Orders from Excel / PDF</span>
+          <a href="/api/import/template/excel" class="btn btn-outline btn-sm"><i class="fas fa-download"></i> Download Template</a>
+        </div>
+        <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px;">Upload an <strong>Excel (.xlsx)</strong> or <strong>PDF</strong> file. MTECH Material Requisition forms are auto-detected.</p>
+        <div id="importDropZone" style="border:2px dashed var(--border);border-radius:12px;padding:36px;text-align:center;cursor:pointer;background:#fafbfc;" onclick="document.getElementById('importFileInput').click()" ondragover="event.preventDefault()" ondrop="handleImportDrop(event)">
+          <i class="fas fa-cloud-upload-alt" style="font-size:2.5rem;color:var(--muted);margin-bottom:10px;display:block;"></i>
+          <div style="font-weight:600;margin-bottom:4px;">Drag & drop your file here</div>
+          <div style="font-size:.8rem;color:var(--muted);">or click to browse &mdash; .xlsx, .xls, .pdf &bull; MTECH forms auto-detected</div>
+          <input type="file" id="importFileInput" accept=".xlsx,.xls,.pdf" style="display:none;" onchange="handleImportFile(this.files[0])"/>
+        </div>
+        <div id="importAlert" style="margin-top:12px;"></div>
+        <div id="importSpinner" style="display:none;text-align:center;padding:20px;color:var(--muted);"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
+        <div id="importPreview" style="display:none;margin-top:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <div class="card-title">Preview <span id="previewCount" style="font-size:.8rem;font-weight:400;color:var(--muted);"></span></div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-outline btn-sm" onclick="resetImport()"><i class="fas fa-times"></i> Cancel</button>
+              <button class="btn btn-primary btn-sm" onclick="confirmImport()"><i class="fas fa-check"></i> Import All</button>
+            </div>
+          </div>
+          <div id="previewTableWrap" style="overflow-x:auto;max-height:380px;overflow-y:auto;border-radius:10px;border:1px solid var(--border);">
+            <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
+              <thead><tr>
+                <th style="background:var(--primary);color:#fff;padding:9px 12px;">#</th>
+                <th style="background:var(--primary);color:#fff;padding:9px 12px;">Supplier</th>
+                <th style="background:var(--primary);color:#fff;padding:9px 12px;">Site</th>
+                <th style="background:var(--primary);color:#fff;padding:9px 12px;">Order Date</th>
+                <th style="background:var(--primary);color:#fff;padding:9px 12px;">Items</th>
+                <th style="background:var(--primary);color:#fff;padding:9px 12px;">Action</th>
+              </tr></thead>
+              <tbody id="previewTableBody"></tbody>
+            </table>
+          </div>
+          <div style="margin-top:12px;display:flex;justify-content:flex-end;gap:8px;">
+            <button class="btn btn-outline" onclick="resetImport()">Cancel</button>
+            <button class="btn btn-primary" onclick="confirmImport()"><i class="fas fa-check-circle"></i> Confirm & Import</button>
+          </div>
+        </div>
+        <div style="margin-top:20px;padding:14px;background:#f8fafc;border-radius:10px;border:1px solid var(--border);">
+          <div style="font-weight:600;font-size:.85rem;margin-bottom:8px;color:var(--primary);"><i class="fas fa-info-circle"></i> Supported Formats</div>
+          <div style="font-size:.8rem;color:var(--muted);line-height:1.8;">
+            <div style="background:#dbeafe;border:1px solid #93c5fd;border-radius:8px;padding:8px 12px;margin-bottom:8px;">
+              <strong style="color:#1e40af;"><i class="fas fa-star"></i> MTECH Material Requisition Supported!</strong> Upload your filled MTECH form directly.
+            </div>
+            <strong>Excel:</strong> Columns auto-detected. Headers: Supplier Name, Site Location, Ordered By, Order Date, Expected Delivery, Item Name, Quantity, Unit, Unit Price<br/>
+            <strong>PDF:</strong> Tables extracted automatically.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOLDERS -->
+    <div class="section-page" id="page-folders">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h2 style="font-size:1.1rem;font-weight:700;color:var(--primary);"><i class="fas fa-folder-open" style="color:var(--accent)"></i> Job Folders</h2>
+        <button class="btn btn-primary btn-sm" onclick="openFolderModal()"><i class="fas fa-plus"></i> New Folder</button>
+      </div>
+      <div id="foldersGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;"></div>
+    </div>
+
+    <!-- FOLDER DETAIL -->
+    <div class="section-page" id="page-folder-detail">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+        <button class="btn btn-outline btn-sm" onclick="showPage('folders')"><i class="fas fa-arrow-left"></i> All Folders</button>
+        <h2 id="folderDetailTitle" style="font-size:1.1rem;font-weight:700;color:var(--primary);flex:1;"></h2>
+        <button class="btn btn-outline btn-sm" onclick="editCurrentFolder()"><i class="fas fa-edit"></i> Edit</button>
+        <button class="btn btn-primary btn-sm" onclick="openNewOrderModal()"><i class="fas fa-plus"></i> New Order</button>
+      </div>
+      <div id="folderDetailInfo" style="margin-bottom:16px;"></div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Orders in this Folder</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Order #</th><th>Supplier</th><th>Site</th><th>Order Date</th><th>Exp. Delivery</th><th>Status</th><th>Items</th><th>Actions</th></tr></thead>
+            <tbody id="folderOrdersBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<!-- NEW ORDER MODAL -->
+<div class="modal-overlay" id="newOrderModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title"><i class="fas fa-plus-circle" style="color:var(--accent)"></i> New Order</span>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('newOrderModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="newOrderAlert"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Supplier Name *</label><input class="form-control" id="no_supplier" placeholder="e.g. BuildRight Supplies"/></div>
+        <div class="form-group"><label class="form-label">Site Location</label><input class="form-control" id="no_site" placeholder="e.g. Site A - Main St"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Ordered By</label><input class="form-control" id="no_ordered_by" placeholder="Your name"/></div>
+        <div class="form-group"><label class="form-label">Order Date *</label><input class="form-control" type="date" id="no_order_date"/></div>
+      </div>
+      <div class="form-row-3">
+        <div class="form-group"><label class="form-label">Expected Delivery</label><input class="form-control" type="date" id="no_exp_delivery"/></div>
+        <div class="form-group"><label class="form-label">Job Folder</label><select class="form-control" id="no_folder_id"><option value="">No Folder</option></select></div>
+        <div class="form-group"><label class="form-label">Notes</label><input class="form-control" id="no_notes" placeholder="Optional notes"/></div>
+      </div>
+      <div style="margin-top:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <label class="form-label" style="margin:0;">Order Items *</label>
+          <button class="btn btn-outline btn-sm" onclick="addItemRow()"><i class="fas fa-plus"></i> Add Item</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="items-table">
+            <thead><tr><th>Item Name</th><th>Description</th><th>Qty</th><th>Unit</th><th>Unit Price</th><th></th></tr></thead>
+            <tbody id="newItemsBody">
+              <tr>
+                <td><input placeholder="e.g. Portland Cement" class="item-name"/></td>
+                <td><input placeholder="Description"/></td>
+                <td><input type="number" placeholder="0" min="0" class="item-qty" style="width:70px;"/></td>
+                <td><select class="item-unit"><option>units</option><option>bags</option><option>tonnes</option><option>m3</option><option>pieces</option><option>lengths</option><option>sheets</option><option>kg</option><option>litres</option><option>m2</option></select></td>
+                <td><input type="number" placeholder="0.00" min="0" step="0.01" class="item-price" style="width:80px;"/></td>
+                <td><button class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('newOrderModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitNewOrder()"><i class="fas fa-save"></i> Create Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-overlay" id="orderDetailModal">
+  <div class="modal" style="max-width:780px;">
+    <div class="modal-header">
+      <span class="modal-title" id="detailModalTitle">Order Details</span>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('orderDetailModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="orderDetailBody"></div>
+  </div>
+</div>
+
+<!-- DELIVERY MODAL -->
+<div class="modal-overlay" id="deliveryModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title"><i class="fas fa-truck" style="color:var(--success)"></i> Record Delivery</span>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('deliveryModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="deliveryAlert"></div>
+      <input type="hidden" id="del_order_id"/>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Delivery Date *</label><input class="form-control" type="date" id="del_date"/></div>
+        <div class="form-group"><label class="form-label">Received By</label><input class="form-control" id="del_received_by" placeholder="Your name"/></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Delivery Notes</label>
+        <textarea class="form-control" id="del_notes" rows="3" placeholder="Condition of delivery, damages, discrepancies..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Delivery Docket / Reference #</label><input class="form-control" id="del_docket" placeholder="e.g. DN-12345"/></div>
+        <div class="form-group"><label class="form-label">Delivery Condition</label>
+          <select class="form-control" id="del_condition">
+            <option value="">— Select —</option>
+            <option>Good — All items in perfect condition</option>
+            <option>Minor damage — Noted but acceptable</option>
+            <option>Damaged — Items need replacement</option>
+            <option>Incomplete — Missing items</option>
+            <option>Wrong items — Incorrect delivery</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Delivery Photo (optional)</label>
+        <input class="form-control" type="file" id="del_photo" accept="image/*" onchange="previewPhoto(this)"/>
+        <img id="photoPreview" src="" alt="Preview" style="display:none;width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin-top:8px;"/>
+      </div>
+      <div>
+        <label class="form-label">Quantities Received & Item Notes</label>
+        <div style="overflow-x:auto;">
+          <table class="items-table">
+            <thead><tr><th>Item</th><th>Ordered</th><th>Prev. Rcvd</th><th>Receiving Now</th><th>Unit</th><th>Item Note</th></tr></thead>
+            <tbody id="deliveryItemsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('deliveryModal')">Cancel</button>
+      <button class="btn btn-success" onclick="submitDelivery()"><i class="fas fa-check"></i> Confirm Delivery</button>
+    </div>
+  </div>
+</div>
+
+<!-- ATTACH/MERGE MODAL -->
+<div class="modal-overlay" id="attachMergeModal">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-header">
+      <span class="modal-title"><i class="fas fa-paperclip" style="color:var(--accent)"></i> Attachments & Import</span>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('attachMergeModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="am_order_id"/>
+      <div id="amAlert"></div>
+      <div class="tabs">
+        <div class="tab active" id="tabAttach" onclick="switchAmTab('attach')"><i class="fas fa-paperclip"></i> Attachments</div>
+        <div class="tab" id="tabMerge" onclick="switchAmTab('merge')"><i class="fas fa-file-import"></i> Import & Merge Items</div>
+      </div>
+      <div id="amTabAttach">
+        <div style="margin-bottom:12px;">
+          <label class="form-label">Upload File to Order</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input class="form-control" type="file" id="attachFileInput" accept=".xlsx,.xls,.pdf,.png,.jpg,.jpeg,.csv,.doc,.docx,.txt" style="flex:1;min-width:200px;"/>
+            <input class="form-control" placeholder="Notes (optional)" id="attachNotes" style="flex:1;min-width:160px;"/>
+            <button class="btn btn-primary" onclick="uploadAttachment()"><i class="fas fa-upload"></i> Upload</button>
+          </div>
+        </div>
+        <div id="attachmentsList"></div>
+      </div>
+      <div id="amTabMerge" style="display:none;">
+        <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px;">Upload an Excel or PDF — its line items will be added to this order and the file saved as an attachment.</p>
+        <div id="mergeDropZone" style="border:2px dashed var(--border);border-radius:10px;padding:28px;text-align:center;cursor:pointer;background:#fafbfc;" onclick="document.getElementById('mergeFileInput').click()" ondragover="event.preventDefault()" ondrop="handleMergeDrop(event)">
+          <i class="fas fa-file-import" style="font-size:2rem;color:var(--muted);display:block;margin-bottom:8px;"></i>
+          <div style="font-weight:600;font-size:.9rem;">Drag & drop Excel or PDF here</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:4px;">.xlsx, .xls, .pdf — MTECH forms auto-detected</div>
+          <input type="file" id="mergeFileInput" accept=".xlsx,.xls,.pdf" style="display:none;" onchange="handleMergeFile(this.files[0])"/>
+        </div>
+        <div id="mergeSpinner" style="display:none;text-align:center;padding:16px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
+        <div id="mergePreview" style="display:none;margin-top:14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-weight:600;">Items to Add <span id="mergeItemCount" style="font-weight:400;color:var(--muted);font-size:.8rem;"></span></span>
+            <button class="btn btn-success btn-sm" onclick="confirmMerge()"><i class="fas fa-check"></i> Add to Order</button>
+          </div>
+          <div style="overflow-x:auto;max-height:260px;overflow-y:auto;border-radius:8px;border:1px solid var(--border);">
+            <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
+              <thead><tr>
+                <th style="background:var(--primary);color:#fff;padding:8px 10px;">Item</th>
+                <th style="background:var(--primary);color:#fff;padding:8px 10px;">Qty</th>
+                <th style="background:var(--primary);color:#fff;padding:8px 10px;">Unit</th>
+                <th style="background:var(--primary);color:#fff;padding:8px 10px;"></th>
+              </tr></thead>
+              <tbody id="mergeItemsBody"></tbody>
+            </table>
+          </div>
+          <div style="margin-top:10px;display:flex;justify-content:flex-end;">
+            <button class="btn btn-success" onclick="confirmMerge()"><i class="fas fa-plus-circle"></i> Add All Items to Order</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOLDER MODAL -->
+<div class="modal-overlay" id="folderModal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header">
+      <span class="modal-title" id="folderModalTitle"><i class="fas fa-folder-plus" style="color:var(--accent)"></i> New Job Folder</span>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('folderModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="folderModalAlert"></div>
+      <input type="hidden" id="fm_id"/>
+      <div class="form-group"><label class="form-label">Folder Name / Job Name *</label><input class="form-control" id="fm_name" placeholder="e.g. Downtown Tower Project"/></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Job Number</label><input class="form-control" id="fm_job_number" placeholder="e.g. JOB-2024-042"/></div>
+        <div class="form-group"><label class="form-label">Folder Color</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="color" id="fm_color" value="#1e3a5f" style="width:48px;height:38px;border:1px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;"/>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <div onclick="setFolderColor('#1e3a5f')" style="width:24px;height:24px;border-radius:6px;background:#1e3a5f;cursor:pointer;" title="Navy"></div>
+              <div onclick="setFolderColor('#10b981')" style="width:24px;height:24px;border-radius:6px;background:#10b981;cursor:pointer;" title="Green"></div>
+              <div onclick="setFolderColor('#f59e0b')" style="width:24px;height:24px;border-radius:6px;background:#f59e0b;cursor:pointer;" title="Amber"></div>
+              <div onclick="setFolderColor('#ef4444')" style="width:24px;height:24px;border-radius:6px;background:#ef4444;cursor:pointer;" title="Red"></div>
+              <div onclick="setFolderColor('#8b5cf6')" style="width:24px;height:24px;border-radius:6px;background:#8b5cf6;cursor:pointer;" title="Purple"></div>
+              <div onclick="setFolderColor('#3b82f6')" style="width:24px;height:24px;border-radius:6px;background:#3b82f6;cursor:pointer;" title="Blue"></div>
+              <div onclick="setFolderColor('#ec4899')" style="width:24px;height:24px;border-radius:6px;background:#ec4899;cursor:pointer;" title="Pink"></div>
+              <div onclick="setFolderColor('#64748b')" style="width:24px;height:24px;border-radius:6px;background:#64748b;cursor:pointer;" title="Gray"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Job Address</label><input class="form-control" id="fm_address" placeholder="Street address"/></div>
+        <div class="form-group"><label class="form-label">City</label><input class="form-control" id="fm_city" placeholder="City"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Site Contact</label><input class="form-control" id="fm_contact" placeholder="Contact name"/></div>
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-control" id="fm_phone" placeholder="Phone number"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="fm_notes" rows="2" placeholder="Any notes about this job..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('folderModal')">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="fm_delete_btn" style="display:none;margin-right:auto;" onclick="deleteFolder()"><i class="fas fa-trash"></i> Delete Folder</button>
+      <button class="btn btn-primary" onclick="saveFolder()"><i class="fas fa-save"></i> Save Folder</button>
+    </div>
+  </div>
+</div>
+
+<!-- MOVE TO FOLDER MODAL -->
+<div class="modal-overlay" id="moveFolderModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <span class="modal-title"><i class="fas fa-folder-open" style="color:var(--accent)"></i> Move to Folder</span>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('moveFolderModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="mf_order_id"/>
+      <p id="mf_order_label" style="font-size:.85rem;color:var(--muted);margin-bottom:14px;"></p>
+      <div class="form-group">
+        <label class="form-label">Select Job Folder</label>
+        <select class="form-control" id="mf_folder_id" onchange="updateFolderPreview(this.value)">
+          <option value="">— No Folder —</option>
+        </select>
+      </div>
+      <div id="mf_folder_preview" style="margin-top:10px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('moveFolderModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmMoveFolder()"><i class="fas fa-check"></i> Move Order</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let allOrders = [];
+let allFolders = [];
+let currentFolderId = null;
+let mergeItems = [];
+
+// NAVIGATION
+function showPage(page) {
+  document.querySelectorAll('.section-page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  var el = document.getElementById('page-' + page);
+  if (el) el.classList.add('active');
+  document.querySelectorAll('[data-page="'+page+'"]').forEach(function(n){ n.classList.add('active'); });
+  var titles = {dashboard:'Dashboard',orders:'All Orders',backorders:'Back Orders',export:'Export',import:'Import Orders',folders:'Job Folders','folder-detail':'Folder'};
+  document.getElementById('topbarTitle').textContent = titles[page] || page;
+  closeSidebar();
+  if (page === 'dashboard') loadDashboard();
+  else if (page === 'orders') loadOrders();
+  else if (page === 'backorders') loadBackorders();
+  else if (page === 'folders') loadFolders();
+}
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlayBg').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlayBg').classList.remove('open');
+}
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function badge(status) {
+  var map = {Pending:'pending',Delivered:'delivered',Partial:'partial',Backordered:'backordered'};
+  var icons = {Pending:'clock',Delivered:'check-circle',Partial:'adjust',Backordered:'exclamation-circle'};
+  var cls = map[status] || 'pending';
+  return '<span class="badge badge-'+cls+'"><i class="fas fa-'+(icons[status]||'circle')+'"></i>'+status+'</span>';
+}
+
+function folderBadge(o) {
+  if (!o.folder_name) return '<span style="color:var(--muted);font-size:.78rem;">—</span>';
+  var c = o.folder_color || '#1e3a5f';
+  return '<span style="background:'+c+'22;color:'+c+';border:1px solid '+c+'44;padding:2px 8px;border-radius:12px;font-size:.72rem;font-weight:600;white-space:nowrap;"><i class=\"fas fa-folder\" style=\"margin-right:3px;\"></i>'+o.folder_name+'</span>';
+}
+
+// DASHBOARD
+async function loadDashboard() {
+  var d = await fetch('/api/dashboard').then(function(r){ return r.json(); });
+  document.getElementById('statsGrid').innerHTML =
+    '<div class="stat-card"><div class="icon" style="background:#dbeafe;color:var(--info)"><i class="fas fa-clipboard-list"></i></div><div class="value">'+d.total+'</div><div class="label">Total Orders</div></div>'
+    +'<div class="stat-card"><div class="icon" style="background:#fef3c7;color:var(--warning)"><i class="fas fa-clock"></i></div><div class="value">'+d.pending+'</div><div class="label">Pending</div></div>'
+    +'<div class="stat-card"><div class="icon" style="background:#d1fae5;color:var(--success)"><i class="fas fa-check-circle"></i></div><div class="value">'+d.delivered+'</div><div class="label">Delivered</div></div>'
+    +'<div class="stat-card"><div class="icon" style="background:#ede9fe;color:var(--partial)"><i class="fas fa-adjust"></i></div><div class="value">'+d.partial+'</div><div class="label">Partial</div></div>'
+    +'<div class="stat-card"><div class="icon" style="background:#fee2e2;color:var(--danger)"><i class="fas fa-exclamation-triangle"></i></div><div class="value">'+d.backordered+'</div><div class="label">Backordered</div></div>'
+    +'<div class="stat-card"><div class="icon" style="background:#fce7f3;color:#db2777"><i class="fas fa-boxes"></i></div><div class="value">'+d.backorder_items+'</div><div class="label">Backorder Items</div></div>';
+  var ul = document.getElementById('upcomingList');
+  if (!d.upcoming.length) { ul.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>No pending orders</p></div>'; }
+  else ul.innerHTML = d.upcoming.map(function(o){ return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);"><div><div style="font-weight:600;font-size:.88rem;">'+o.order_number+'</div><div style="font-size:.75rem;color:var(--muted);">'+o.supplier_name+' &bull; '+(o.site_location||'—')+'</div></div><div style="text-align:right;">'+badge(o.status)+'<div style="font-size:.72rem;color:var(--muted);margin-top:3px;">'+(o.expected_delivery||'No date')+'</div></div></div>'; }).join('');
+  var sl = document.getElementById('supplierList');
+  if (!d.by_supplier.length) { sl.innerHTML = '<div class="empty-state"><i class="fas fa-truck"></i><p>No data</p></div>'; }
+  else sl.innerHTML = d.by_supplier.map(function(s){ return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);"><div style="font-size:.88rem;font-weight:500;">'+s.supplier_name+'</div><span style="background:var(--primary);color:#fff;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:600;">'+s.cnt+' orders</span></div>'; }).join('');
+}
+
+// ORDERS
+async function loadOrders() {
+  var res = await fetch('/api/orders').then(function(r){ return r.json(); });
+  allOrders = res;
+  var sites = [];
+  res.forEach(function(o){ if (o.site_location && sites.indexOf(o.site_location)===-1) sites.push(o.site_location); });
+  var sf = document.getElementById('siteFilter');
+  sf.innerHTML = '<option value="">All Sites</option>' + sites.map(function(s){ return '<option>'+s+'</option>'; }).join('');
+  renderOrdersTable(allOrders);
+}
+
+function filterOrders() {
+  var search = document.getElementById('searchInput').value.toLowerCase();
+  var status = document.getElementById('statusFilter').value;
+  var site = document.getElementById('siteFilter').value;
+  var folderEl = document.getElementById('folderFilter');
+  var folderF = folderEl ? folderEl.value : '';
+  var filtered = allOrders.filter(function(o){
+    return (!status || o.status===status) &&
+           (!site || o.site_location===site) &&
+           (!folderF || String(o.folder_id)===folderF) &&
+           (!search || o.order_number.toLowerCase().indexOf(search)>-1 ||
+            o.supplier_name.toLowerCase().indexOf(search)>-1 ||
+            (o.ordered_by||'').toLowerCase().indexOf(search)>-1);
+  });
+  renderOrdersTable(filtered);
+}
+
+function renderOrdersTable(orders) {
+  var tbody = document.getElementById('ordersTableBody');
+  if (!orders.length) { tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><i class="fas fa-search"></i><p>No orders found</p></div></td></tr>'; return; }
+  tbody.innerHTML = orders.map(function(o){
+    return '<tr>'
+      +'<td><strong>'+o.order_number+'</strong></td>'
+      +'<td>'+folderBadge(o)+'</td>'
+      +'<td>'+o.supplier_name+'</td>'
+      +'<td>'+(o.site_location||'—')+'</td>'
+      +'<td>'+(o.ordered_by||'—')+'</td>'
+      +'<td>'+o.order_date+'</td>'
+      +'<td>'+(o.expected_delivery||'—')+'</td>'
+      +'<td>'+badge(o.status)+'</td>'
+      +'<td><span style="font-size:.78rem;color:var(--muted);">'+(o.items||[]).length+' item(s)</span></td>'
+      +'<td><div style="display:flex;gap:4px;">'
+      +'<button class="btn btn-outline btn-sm" title="View" onclick="viewOrder('+o.id+')"><i class="fas fa-eye"></i></button>'
+      +'<button class="btn btn-success btn-sm" title="Record Delivery" onclick="openDeliveryModal('+o.id+')"><i class="fas fa-truck"></i></button>'
+      +'<button class="btn btn-primary btn-sm" title="Attachments" onclick="openAttachMergeModal('+o.id+')"><i class="fas fa-paperclip"></i></button>'
+      +'<button class="btn btn-outline btn-sm" title="Move to Folder" data-oid="'+o.id+'" data-fid="'+(o.folder_id||'')+'" onclick="moveFolderClick(this)"><i class="fas fa-folder-open"></i></button>'
+      +'<button class="btn btn-danger btn-sm" title="Delete" data-oid="'+o.id+'" data-onum="'+o.order_number+'" onclick="deleteOrderClick(this)"><i class="fas fa-trash"></i></button>'
+      +'</div></td></tr>';
+  }).join('');
+}
+
+async function viewOrder(id) {
+  var o = await fetch('/api/orders/'+id).then(function(r){ return r.json(); });
+  document.getElementById('detailModalTitle').innerHTML = '<i class="fas fa-clipboard-list" style="color:var(--accent)"></i> '+o.order_number;
+  var totalValue = (o.items||[]).reduce(function(s,i){ return s+(i.quantity_ordered*i.unit_price); },0);
+  var itemsRows = '';
+  (o.items||[]).forEach(function(i){
+    var pct = i.quantity_ordered>0 ? Math.round((i.quantity_received/i.quantity_ordered)*100) : 0;
+    var clrs = {Delivered:'var(--success)',Partial:'var(--partial)',Backordered:'var(--danger)',Pending:'var(--warning)'};
+    var noteHtml = i.delivery_note ? '<br><span style="font-size:.72rem;color:var(--info);"><i class=\"fas fa-sticky-note\"></i> '+i.delivery_note+'</span>' : '';
+    itemsRows += '<tr><td><strong>'+i.item_name+'</strong>'+noteHtml+'</td>'
+      +'<td>'+(i.description||'—')+'</td>'
+      +'<td>'+i.quantity_ordered+' '+i.unit+'</td>'
+      +'<td>'+i.quantity_received+' '+i.unit+'</td>'
+      +'<td>'+i.unit+'</td>'
+      +'<td style="min-width:100px;"><div class="progress"><div class="progress-bar" style="width:'+pct+'%;background:'+(clrs[i.status]||'var(--info)')+'"></div></div><span style="font-size:.7rem;color:var(--muted);">'+pct+'%</span></td>'
+      +'<td>'+badge(i.status)+'</td></tr>';
+  });
+  var deliveriesHtml = '';
+  if ((o.deliveries||[]).length) {
+    deliveriesHtml = '<div><div class="card-title" style="margin-bottom:10px;">Delivery History</div>';
+    (o.deliveries||[]).forEach(function(d){
+      deliveriesHtml += '<div class="delivery-item">'
+        +'<div class="meta"><i class="fas fa-calendar"></i> '+d.delivery_date+' &bull; Received by: <strong>'+(d.received_by||'—')+'</strong></div>'
+        +'<div style="font-size:.85rem;">'+(d.delivery_notes||'No notes')+'</div>';
+      if (d.photo_path) deliveriesHtml += '<img src="/'+d.photo_path+'" style="width:80px;height:60px;object-fit:cover;border-radius:6px;margin-top:8px;cursor:pointer;" onclick="window.open(this.src)"/>';
+      deliveriesHtml += '</div>';
+    });
+    deliveriesHtml += '</div>';
+  }
+  document.getElementById('orderDetailBody').innerHTML =
+    '<div class="detail-grid" style="margin-bottom:16px;">'
+    +'<div class="dl"><span class="dt">Supplier</span><span class="dd">'+o.supplier_name+'</span></div>'
+    +'<div class="dl"><span class="dt">Site Location</span><span class="dd">'+(o.site_location||'—')+'</span></div>'
+    +'<div class="dl"><span class="dt">Ordered By</span><span class="dd">'+(o.ordered_by||'—')+'</span></div>'
+    +'<div class="dl"><span class="dt">Order Date</span><span class="dd">'+o.order_date+'</span></div>'
+    +'<div class="dl"><span class="dt">Expected Delivery</span><span class="dd">'+(o.expected_delivery||'—')+'</span></div>'
+    +'<div class="dl"><span class="dt">Status</span><span class="dd">'+badge(o.status)+'</span></div>'
+    +'<div class="dl"><span class="dt">Est. Value</span><span class="dd">$'+totalValue.toFixed(2)+'</span></div>'
+    +'<div class="dl"><span class="dt">Notes</span><span class="dd">'+(o.notes||'—')+'</span></div>'
+    +'</div>'
+    +'<div style="margin-bottom:16px;"><div class="card-title" style="margin-bottom:10px;">Order Items</div>'
+    +'<div style="overflow-x:auto;"><table class="items-table"><thead><tr><th>Item</th><th>Description</th><th>Ordered</th><th>Received</th><th>Unit</th><th>Progress</th><th>Status</th></tr></thead><tbody>'+itemsRows+'</tbody></table></div></div>'
+    +deliveriesHtml
+    +'<div class="modal-footer" style="padding:16px 0 0;border-top:1px solid var(--border);margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">'
+    +'<button class=\"btn btn-success\" data-oid=\"'+o.id+'\"' +' onclick=\"viewOrderDeliver(this)\"><i class=\"fas fa-truck\"></i> Record Delivery</button>'
+    +'<button class=\"btn btn-primary\" data-oid=\"'+o.id+'\"' +' onclick=\"viewOrderAttach(this)\"><i class=\"fas fa-paperclip\"></i> Attachments & Import</button>'
+    +'</div>';
+  openModal('orderDetailModal');
+}
+
+async function deleteOrder(id, num) {
+  if (!confirm('Delete order '+num+'? This cannot be undone.')) return;
+  await fetch('/api/orders/'+id, {method:'DELETE'});
+  loadOrders();
+}
+
+// NEW ORDER
+function openNewOrderModal() {
+  document.getElementById('no_order_date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('newOrderAlert').innerHTML = '';
+  openModal('newOrderModal');
+}
+function addItemRow() {
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<td><input placeholder="Item name" class="item-name"/></td><td><input placeholder="Description"/></td><td><input type="number" placeholder="0" min="0" class="item-qty" style="width:70px;"/></td><td><select class="item-unit"><option>units</option><option>bags</option><option>tonnes</option><option>m3</option><option>pieces</option><option>lengths</option><option>sheets</option><option>kg</option><option>litres</option><option>m2</option></select></td><td><input type="number" placeholder="0.00" min="0" step="0.01" class="item-price" style="width:80px;"/></td><td><button class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>';
+  document.getElementById('newItemsBody').appendChild(tr);
+}
+function removeRow(btn) {
+  var tbody = document.getElementById('newItemsBody');
+  if (tbody.rows.length > 1) btn.closest('tr').remove();
+}
+async function submitNewOrder() {
+  var supplier = document.getElementById('no_supplier').value.trim();
+  var order_date = document.getElementById('no_order_date').value;
+  if (!supplier || !order_date) { document.getElementById('newOrderAlert').innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Supplier and Order Date are required.</div>'; return; }
+  var rows = document.getElementById('newItemsBody').rows;
+  var items = [];
+  for (var r of rows) {
+    var name = r.querySelector('.item-name').value.trim();
+    var qty = parseFloat(r.querySelector('.item-qty').value)||0;
+    if (name && qty>0) items.push({item_name:name,description:r.cells[1].querySelector('input').value,quantity_ordered:qty,unit:r.querySelector('.item-unit').value,unit_price:parseFloat(r.querySelector('.item-price').value)||0});
+  }
+  if (!items.length) { document.getElementById('newOrderAlert').innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Add at least one item.</div>'; return; }
+  var payload = {supplier_name:supplier,site_location:document.getElementById('no_site').value,ordered_by:document.getElementById('no_ordered_by').value,order_date,expected_delivery:document.getElementById('no_exp_delivery').value,notes:document.getElementById('no_notes').value,folder_id:document.getElementById('no_folder_id').value||null,items};
+  var res = await fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(function(r){ return r.json(); });
+  if (res.success) {
+    closeModal('newOrderModal');
+    showPage('orders');
+    alert('Order '+res.order_number+' created!');
+  }
+}
+
+// DELIVERY
+async function openDeliveryModal(orderId) {
+  var o = await fetch('/api/orders/'+orderId).then(function(r){ return r.json(); });
+  document.getElementById('del_order_id').value = orderId;
+  document.getElementById('del_date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('del_received_by').value = '';
+  document.getElementById('del_notes').value = '';
+  document.getElementById('del_docket').value = '';
+  document.getElementById('del_condition').value = '';
+  document.getElementById('del_photo').value = '';
+  document.getElementById('photoPreview').style.display = 'none';
+  document.getElementById('deliveryAlert').innerHTML = '';
+  var tbody = document.getElementById('deliveryItemsBody');
+  tbody.innerHTML = (o.items||[]).map(function(i){
+    var remaining = i.quantity_ordered - i.quantity_received;
+    return '<tr>'
+      +'<td><strong>'+i.item_name+'</strong>'+(i.delivery_note?'<br><small style="color:var(--muted);font-size:.72rem;">Prev: '+i.delivery_note+'</small>':'')+'</td>'
+      +'<td>'+i.quantity_ordered+' '+i.unit+'</td>'
+      +'<td>'+i.quantity_received+' '+i.unit+'</td>'
+      +'<td><input type="number" class="recv-input" data-id="'+i.id+'" min="0" max="'+remaining+'" value="0" placeholder="0"/></td>'
+      +'<td>'+i.unit+'</td>'
+      +'<td><input type="text" class="note-input" data-id="'+i.id+'" placeholder="e.g. damaged, short..." style="width:100%;min-width:140px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:.82rem;"/></td>'
+      +'</tr>';
+  }).join('');
+  openModal('deliveryModal');
+}
+function previewPhoto(input) {
+  var preview = document.getElementById('photoPreview');
+  if (input.files && input.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function(e){ preview.src=e.target.result; preview.style.display='block'; };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+async function submitDelivery() {
+  var orderId = document.getElementById('del_order_id').value;
+  var date = document.getElementById('del_date').value;
+  if (!date) { document.getElementById('deliveryAlert').innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Delivery date is required.</div>'; return; }
+  var items = [];
+  document.querySelectorAll('#deliveryItemsBody .recv-input').forEach(function(inp){
+    var noteEl = document.querySelector('#deliveryItemsBody .note-input[data-id="'+inp.dataset.id+'"]');
+    items.push({id:parseInt(inp.dataset.id),qty_received:parseFloat(inp.value)||0,note:noteEl?noteEl.value.trim():''});
+  });
+  var fd = new FormData();
+  fd.append('delivery_date',date);
+  fd.append('received_by',document.getElementById('del_received_by').value);
+  var docket = document.getElementById('del_docket').value;
+  var condition = document.getElementById('del_condition').value;
+  var baseNotes = document.getElementById('del_notes').value;
+  var fullNotes = [baseNotes,docket?'Docket: '+docket:'',condition?'Condition: '+condition:''].filter(Boolean).join(' | ');
+  fd.append('delivery_notes',fullNotes);
+  fd.append('items_json',JSON.stringify(items));
+  var photo = document.getElementById('del_photo').files[0];
+  if (photo) fd.append('photo',photo);
+  var res = await fetch('/api/orders/'+orderId+'/deliver',{method:'POST',body:fd}).then(function(r){ return r.json(); });
+  if (res.success) { closeModal('deliveryModal'); loadOrders(); alert('Delivery recorded! Order status: '+res.order_status); }
+}
+
+// BACKORDERS
+async function loadBackorders() {
+  var items = await fetch('/api/backorders').then(function(r){ return r.json(); });
+  var tbody = document.getElementById('backordersTableBody');
+  if (!items.length) { tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><i class="fas fa-check-circle"></i><p>No backorders!</p></div></td></tr>'; return; }
+  var barColors = {Backordered:'var(--danger)',Partial:'var(--partial)',Pending:'var(--warning)'};
+  tbody.innerHTML = items.map(function(i){
+    var outstanding = i.quantity_ordered - i.quantity_received;
+    var pct = i.quantity_ordered>0 ? Math.round((i.quantity_received/i.quantity_ordered)*100) : 0;
+    var noteHtml = i.delivery_note ? '<br><span style="font-size:.72rem;color:var(--info);"><i class=\"fas fa-sticky-note\"></i> '+i.delivery_note+'</span>' : '';
+    return '<tr>'
+      +'<td><strong>'+i.order_number+'</strong></td>'
+      +'<td>'+i.supplier_name+'</td>'
+      +'<td>'+(i.site_location||'—')+'</td>'
+      +'<td>'+i.item_name+noteHtml+'</td>'
+      +'<td>'+i.quantity_ordered+' '+i.unit+'</td>'
+      +'<td>'+i.quantity_received+' '+i.unit+'</td>'
+      +'<td><strong style="color:var(--danger);">'+outstanding+' '+i.unit+'</strong></td>'
+      +'<td style="min-width:100px;"><div class="progress"><div class="progress-bar" style="width:'+pct+'%;background:'+(barColors[i.status]||'var(--info)')+'"></div></div><span style="font-size:.7rem;color:var(--muted);">'+pct+'%</span></td>'
+      +'<td>'+(i.expected_delivery||'—')+'</td>'
+      +'<td>'+badge(i.status)+'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+// EXPORT
+function exportFile(type) {
+  var status = document.getElementById('exportStatus').value;
+  window.open('/api/export/'+type+(status?'?status='+encodeURIComponent(status):''),'_blank');
+}
+
+// IMPORT
+var importedOrders = [];
+function handleImportDrop(e) { e.preventDefault(); var f=e.dataTransfer.files[0]; if(f) handleImportFile(f); }
+function handleImportFile(file) {
+  if (!file) return;
+  var ext = file.name.split('.').pop().toLowerCase();
+  if (!['xlsx','xls','pdf'].includes(ext)) { document.getElementById('importAlert').innerHTML='<div class="alert alert-danger">Only .xlsx, .xls, .pdf supported.</div>'; return; }
+  document.getElementById('importAlert').innerHTML='';
+  document.getElementById('importPreview').style.display='none';
+  document.getElementById('importSpinner').style.display='block';
+  var fd = new FormData(); fd.append('file',file);
+  fetch('/api/import/preview',{method:'POST',body:fd}).then(function(r){ return r.json(); }).then(function(data){
+    document.getElementById('importSpinner').style.display='none';
+    if (data.error) { document.getElementById('importAlert').innerHTML='<div class="alert alert-danger">'+data.error+'</div>'; return; }
+    if (!data.orders||!data.orders.length) { document.getElementById('importAlert').innerHTML='<div class="alert alert-danger">No orders detected.</div>'; return; }
+    importedOrders = data.orders;
+    renderImportPreview(data);
+  }).catch(function(e){ document.getElementById('importSpinner').style.display='none'; document.getElementById('importAlert').innerHTML='<div class="alert alert-danger">Error: '+e.message+'</div>'; });
+}
+function renderImportPreview(data) {
+  document.getElementById('previewCount').textContent = '— '+data.count+' order(s), '+data.total_items+' item(s)';
+  document.getElementById('previewTableBody').innerHTML = data.orders.map(function(o,idx){
+    var itemsList = (o.items||[]).map(function(i){ return '<div>• '+i.quantity_ordered+' '+i.unit+' '+i.item_name+'</div>'; }).join('');
+    return '<tr style="border-bottom:1px solid var(--border);">'
+      +'<td style="padding:9px 12px;color:var(--muted);">'+(idx+1)+'</td>'
+      +'<td style="padding:9px 12px;font-weight:600;">'+o.supplier_name+'</td>'
+      +'<td style="padding:9px 12px;">'+(o.site_location||'—')+'</td>'
+      +'<td style="padding:9px 12px;">'+o.order_date+'</td>'
+      +'<td style="padding:9px 12px;font-size:.78rem;">'+itemsList+'</td>'
+      +'<td style="padding:9px 12px;"><button class="btn btn-danger btn-sm" onclick="removeImportRow('+idx+')"><i class="fas fa-trash"></i></button></td>'
+      +'</tr>';
+  }).join('');
+  document.getElementById('importPreview').style.display='block';
+}
+function removeImportRow(idx) { importedOrders.splice(idx,1); if(!importedOrders.length){resetImport();return;} renderImportPreview({orders:importedOrders,count:importedOrders.length,total_items:importedOrders.reduce(function(s,o){return s+(o.items||[]).length;},0)}); }
+function resetImport() { importedOrders=[]; document.getElementById('importFileInput').value=''; document.getElementById('importPreview').style.display='none'; document.getElementById('importAlert').innerHTML=''; document.getElementById('importSpinner').style.display='none'; }
+async function confirmImport() {
+  if (!importedOrders.length) return;
+  var res = await fetch('/api/import/confirm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orders:importedOrders})}).then(function(r){ return r.json(); });
+  if (res.success) { document.getElementById('importAlert').innerHTML='<div class="alert alert-success"><i class="fas fa-check-circle"></i> Imported '+res.created+' order(s)!</div>'; resetImport(); setTimeout(function(){ showPage('orders'); },1800); }
+  else { document.getElementById('importAlert').innerHTML='<div class="alert alert-danger">'+res.error+'</div>'; }
+}
+
+// ATTACH & MERGE
+function openAttachMergeModal(orderId) {
+  currentAmOrderId = orderId;
+  document.getElementById('am_order_id').value = orderId;
+  document.getElementById('amAlert').innerHTML = '';
+  resetMerge();
+  switchAmTab('attach');
+  loadAttachments(orderId);
+  openModal('attachMergeModal');
+}
+var currentAmOrderId = null;
+function switchAmTab(tab) {
+  document.getElementById('amTabAttach').style.display = tab==='attach'?'':'none';
+  document.getElementById('amTabMerge').style.display = tab==='merge'?'':'none';
+  document.getElementById('tabAttach').classList.toggle('active',tab==='attach');
+  document.getElementById('tabMerge').classList.toggle('active',tab==='merge');
+}
+async function loadAttachments(orderId) {
+  var res = await fetch('/api/orders/'+orderId).then(function(r){ return r.json(); });
+  var atts = res.attachments||[];
+  var el = document.getElementById('attachmentsList');
+  var icons = {xlsx:'file-excel',xls:'file-excel',pdf:'file-pdf',png:'file-image',jpg:'file-image',jpeg:'file-image',csv:'file-csv',doc:'file-word',docx:'file-word',txt:'file-alt'};
+  var clrs = {xlsx:'#10b981',xls:'#10b981',pdf:'#ef4444',png:'#8b5cf6',jpg:'#8b5cf6',jpeg:'#8b5cf6',csv:'#f59e0b',doc:'#3b82f6',docx:'#3b82f6',txt:'#64748b'};
+  if (!atts.length) { el.innerHTML='<div class="empty-state" style="padding:24px;"><i class="fas fa-paperclip"></i><p>No attachments yet</p></div>'; return; }
+  el.innerHTML = atts.map(function(a){
+    var ic = icons[a.file_type]||'file'; var c = clrs[a.file_type]||'#64748b';
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">'
+      +'<div style="width:36px;height:36px;border-radius:8px;background:'+c+'20;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-'+ic+'" style="color:'+c+';font-size:1rem;"></i></div>'
+      +'<div style="flex:1;min-width:0;"><div style="font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+a.original_name+'</div><div style="font-size:.72rem;color:var(--muted);">'+(a.uploaded_at||'').split('T')[0]+' '+(a.notes?'· '+a.notes:'')+'</div></div>'
+      +'<div style="display:flex;gap:4px;"><a href="/'+a.file_path+'" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-download"></i></a><button class="btn btn-danger btn-sm" onclick="deleteAtt('+orderId+','+a.id+')"><i class="fas fa-trash"></i></button></div>'
+      +'</div>';
+  }).join('');
+}
+async function uploadAttachment() {
+  var orderId = document.getElementById('am_order_id').value;
+  var file = document.getElementById('attachFileInput').files[0];
+  if (!file) { document.getElementById('amAlert').innerHTML='<div class="alert alert-danger">Please select a file.</div>'; return; }
+  var fd = new FormData(); fd.append('file',file); fd.append('notes',document.getElementById('attachNotes').value);
+  var res = await fetch('/api/orders/'+orderId+'/attachments',{method:'POST',body:fd}).then(function(r){ return r.json(); });
+  if (res.success) { document.getElementById('amAlert').innerHTML='<div class="alert alert-success">File attached!</div>'; document.getElementById('attachFileInput').value=''; document.getElementById('attachNotes').value=''; loadAttachments(orderId); }
+  else { document.getElementById('amAlert').innerHTML='<div class="alert alert-danger">'+res.error+'</div>'; }
+}
+async function deleteAtt(orderId,attId) {
+  if (!confirm('Remove this attachment?')) return;
+  await fetch('/api/orders/'+orderId+'/attachments/'+attId,{method:'DELETE'});
+  loadAttachments(orderId);
+}
+function handleMergeDrop(e) { e.preventDefault(); var f=e.dataTransfer.files[0]; if(f) handleMergeFile(f); }
+function handleMergeFile(file) {
+  if (!file) return;
+  var ext = file.name.split('.').pop().toLowerCase();
+  if (!['xlsx','xls','pdf'].includes(ext)) { document.getElementById('amAlert').innerHTML='<div class="alert alert-danger">Only .xlsx, .xls, .pdf supported.</div>'; return; }
+  document.getElementById('amAlert').innerHTML=''; document.getElementById('mergePreview').style.display='none'; document.getElementById('mergeSpinner').style.display='block';
+  var orderId = document.getElementById('am_order_id').value;
+  var fd = new FormData(); fd.append('file',file);
+  fetch('/api/orders/'+orderId+'/merge-items/preview',{method:'POST',body:fd}).then(function(r){ return r.json(); }).then(function(data){
+    document.getElementById('mergeSpinner').style.display='none';
+    if (data.error) { document.getElementById('amAlert').innerHTML='<div class="alert alert-danger">'+data.error+'</div>'; return; }
+    if (!data.items||!data.items.length) { document.getElementById('amAlert').innerHTML='<div class="alert alert-danger">No items found.</div>'; return; }
+    mergeItems = data.items; window._mergeFile = file;
+    document.getElementById('mergeItemCount').textContent = '— '+data.items.length+' item(s)';
+    document.getElementById('mergeItemsBody').innerHTML = data.items.map(function(item,idx){
+      return '<tr style="border-bottom:1px solid var(--border);">'
+        +'<td style="padding:7px 10px;font-weight:500;">'+item.item_name+'</td>'
+        +'<td style="padding:7px 10px;">'+item.quantity_ordered+'</td>'
+        +'<td style="padding:7px 10px;">'+item.unit+'</td>'
+        +'<td style="padding:7px 10px;"><button class="btn btn-danger btn-sm" onclick="removeMergeItem('+idx+')"><i class="fas fa-times"></i></button></td>'
+        +'</tr>';
+    }).join('');
+    document.getElementById('mergePreview').style.display='block';
+  }).catch(function(e){ document.getElementById('mergeSpinner').style.display='none'; document.getElementById('amAlert').innerHTML='<div class="alert alert-danger">Error: '+e.message+'</div>'; });
+}
+function removeMergeItem(idx) { mergeItems.splice(idx,1); if(!mergeItems.length){resetMerge();return;} document.getElementById('mergeItemCount').textContent='— '+mergeItems.length+' item(s)'; }
+function resetMerge() { mergeItems=[]; window._mergeFile=null; document.getElementById('mergeFileInput').value=''; document.getElementById('mergePreview').style.display='none'; document.getElementById('mergeSpinner').style.display='none'; }
+async function confirmMerge() {
+  if (!mergeItems.length||!window._mergeFile) return;
+  var orderId = document.getElementById('am_order_id').value;
+  var fd = new FormData(); fd.append('file',window._mergeFile);
+  var res = await fetch('/api/orders/'+orderId+'/merge-items',{method:'POST',body:fd}).then(function(r){ return r.json(); });
+  if (res.success) { document.getElementById('amAlert').innerHTML='<div class="alert alert-success"><strong>'+res.items_added+' items</strong> added to order!</div>'; resetMerge(); loadAttachments(orderId); loadOrders(); switchAmTab('attach'); }
+  else { document.getElementById('amAlert').innerHTML='<div class="alert alert-danger">'+res.error+'</div>'; }
+}
+
+// JOB FOLDERS
+async function loadFolders() {
+  var res = await fetch('/api/folders').then(function(r){ return r.json(); });
+  allFolders = res;
+  renderFoldersGrid(res);
+  renderFolderNav(res);
+  populateFolderDropdowns(res);
+}
+function renderFolderNav(folders) {
+  var el = document.getElementById('folderNavList');
+  if (!folders.length) { el.innerHTML=''; return; }
+  el.innerHTML = folders.map(function(f){
+    return '<div class="nav-item" onclick="openFolderDetail('+f.id+')" style="padding-left:28px;">'
+      +'<i class="fas fa-folder" style="color:'+(f.color||'#f59e0b')+';"></i>'
+      +'<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+f.name+'</span>'
+      +'<span style="margin-left:auto;background:rgba(255,255,255,.15);border-radius:10px;padding:1px 7px;font-size:.7rem;">'+(f.order_count||0)+'</span>'
+      +'</div>';
+  }).join('');
+}
+function renderFoldersGrid(folders) {
+  var el = document.getElementById('foldersGrid');
+  if (!folders.length) { el.innerHTML='<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-folder-open"></i><p>No job folders yet. Create one to organise your orders.</p></div>'; return; }
+  el.innerHTML = folders.map(function(f){
+    var c = f.color||'#1e3a5f';
+    var dateStr = f.created_at ? (f.created_at.split('T')[0]||f.created_at.split(' ')[0]) : '';
+    var extra = '';
+    if (f.job_number) extra += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:2px;"><i class="fas fa-hashtag"></i> '+f.job_number+'</div>';
+    if (f.address) extra += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:2px;"><i class="fas fa-map-marker-alt"></i> '+f.address+(f.city?', '+f.city:'')+'</div>';
+    if (f.contact) extra += '<div style="font-size:.75rem;color:var(--muted);margin-bottom:2px;"><i class="fas fa-user"></i> '+f.contact+(f.phone?' · '+f.phone:'')+'</div>';
+    return '<div class="card" style="cursor:pointer;border-top:4px solid '+c+';transition:.2s;" onclick="openFolderDetail('+f.id+')">'
+      +'<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">'
+      +'<div style="width:44px;height:44px;border-radius:10px;background:'+c+'22;display:flex;align-items:center;justify-content:center;">'
+      +'<i class="fas fa-folder" style="font-size:1.4rem;color:'+c+';"></i></div>'
+      +'<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openFolderModal('+f.id+')" title="Edit"><i class="fas fa-edit"></i></button>'
+      +'</div>'
+      +'<div style="font-weight:700;font-size:1rem;margin-bottom:4px;">'+f.name+'</div>'
+      +extra
+      +'<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">'
+      +'<span style="font-size:.8rem;color:var(--muted);">'+(f.order_count||0)+' order'+(f.order_count!==1?'s':'')+'</span>'
+      +'<span style="font-size:.75rem;color:var(--muted);">'+dateStr+'</span>'
+      +'</div></div>';
+  }).join('');
+}
+function populateFolderDropdowns(folders) {
+  var opts = '<option value="">No Folder</option>' + folders.map(function(f){ return '<option value="'+f.id+'">'+f.name+'</option>'; }).join('');
+  var noEl = document.getElementById('no_folder_id');
+  var ffEl = document.getElementById('folderFilter');
+  var mfEl = document.getElementById('mf_folder_id');
+  if (noEl) noEl.innerHTML = opts;
+  if (ffEl) ffEl.innerHTML = '<option value="">All Folders</option>' + folders.map(function(f){ return '<option value="'+f.id+'">'+f.name+'</option>'; }).join('');
+  if (mfEl) mfEl.innerHTML = '<option value="">— No Folder —</option>' + folders.map(function(f){ return '<option value="'+f.id+'">'+f.name+(f.job_number?' ('+f.job_number+')':'')+'</option>'; }).join('');
+}
+async function openFolderDetail(folderId) {
+  currentFolderId = folderId;
+  var folder = allFolders.find(function(f){ return f.id===folderId; });
+  if (!folder) return;
+  document.getElementById('folderDetailTitle').innerHTML = '<i class="fas fa-folder" style="color:'+(folder.color||'#1e3a5f')+';margin-right:6px;"></i>'+folder.name;
+  var infoParts = [];
+  if (folder.job_number) infoParts.push('<span><i class="fas fa-hashtag"></i> <strong>Job#:</strong> '+folder.job_number+'</span>');
+  if (folder.address) infoParts.push('<span><i class="fas fa-map-marker-alt"></i> '+folder.address+(folder.city?', '+folder.city:'')+'</span>');
+  if (folder.contact) infoParts.push('<span><i class="fas fa-user"></i> '+folder.contact+(folder.phone?' · '+folder.phone:'')+'</span>');
+  document.getElementById('folderDetailInfo').innerHTML = infoParts.length ? '<div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);background:#f8fafc;padding:10px 14px;border-radius:8px;border:1px solid var(--border);">'+infoParts.join('')+'</div>' : '';
+  var orders = await fetch('/api/folders/'+folderId+'/orders').then(function(r){ return r.json(); });
+  var tbody = document.getElementById('folderOrdersBody');
+  if (!orders.length) { tbody.innerHTML='<tr><td colspan="8"><div class="empty-state"><i class="fas fa-clipboard-list"></i><p>No orders in this folder yet</p></div></td></tr>'; }
+  else { tbody.innerHTML = orders.map(function(o){ return '<tr><td><strong>'+o.order_number+'</strong></td><td>'+o.supplier_name+'</td><td>'+(o.site_location||'—')+'</td><td>'+o.order_date+'</td><td>'+(o.expected_delivery||'—')+'</td><td>'+badge(o.status)+'</td><td><span style="font-size:.78rem;color:var(--muted);">'+(o.items||[]).length+' item(s)</span></td><td><div style="display:flex;gap:4px;"><button class="btn btn-outline btn-sm" onclick="viewOrder('+o.id+')"><i class="fas fa-eye"></i></button><button class="btn btn-success btn-sm" onclick="openDeliveryModal('+o.id+')"><i class="fas fa-truck"></i></button></div></td></tr>'; }).join(''); }
+  var noEl = document.getElementById('no_folder_id');
+  if (noEl) noEl.value = folderId;
+  showPage('folder-detail');
+  document.getElementById('topbarTitle').textContent = folder.name;
+}
+function editCurrentFolder() { if (currentFolderId) openFolderModal(currentFolderId); }
+function openFolderModal(folderId) {
+  document.getElementById('folderModalAlert').innerHTML='';
+  document.getElementById('fm_id').value='';
+  ['fm_name','fm_job_number','fm_address','fm_city','fm_contact','fm_phone','fm_notes'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('fm_color').value='#1e3a5f';
+  document.getElementById('fm_delete_btn').style.display='none';
+  document.getElementById('folderModalTitle').innerHTML='<i class="fas fa-folder-plus" style="color:var(--accent)"></i> New Job Folder';
+  if (folderId) {
+    var f = allFolders.find(function(x){ return x.id===folderId; });
+    if (f) {
+      document.getElementById('fm_id').value=f.id;
+      document.getElementById('fm_name').value=f.name||'';
+      document.getElementById('fm_job_number').value=f.job_number||'';
+      document.getElementById('fm_address').value=f.address||'';
+      document.getElementById('fm_city').value=f.city||'';
+      document.getElementById('fm_contact').value=f.contact||'';
+      document.getElementById('fm_phone').value=f.phone||'';
+      document.getElementById('fm_notes').value=f.notes||'';
+      document.getElementById('fm_color').value=f.color||'#1e3a5f';
+      document.getElementById('fm_delete_btn').style.display='';
+      document.getElementById('folderModalTitle').innerHTML='<i class="fas fa-folder-open" style="color:'+(f.color||'var(--accent)')+'"></i> Edit: '+f.name;
+    }
+  }
+  openModal('folderModal');
+}
+function setFolderColor(color) { document.getElementById('fm_color').value=color; }
+async function saveFolder() {
+  var name = document.getElementById('fm_name').value.trim();
+  if (!name) { document.getElementById('folderModalAlert').innerHTML='<div class="alert alert-danger">Folder name is required.</div>'; return; }
+  var id = document.getElementById('fm_id').value;
+  var payload = {name,job_number:document.getElementById('fm_job_number').value,address:document.getElementById('fm_address').value,city:document.getElementById('fm_city').value,contact:document.getElementById('fm_contact').value,phone:document.getElementById('fm_phone').value,color:document.getElementById('fm_color').value,notes:document.getElementById('fm_notes').value};
+  var res = await fetch(id?'/api/folders/'+id:'/api/folders',{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(function(r){ return r.json(); });
+  if (res.success||res.id) { closeModal('folderModal'); await loadFolders(); if(id&&currentFolderId==id) openFolderDetail(parseInt(id)); }
+  else { document.getElementById('folderModalAlert').innerHTML='<div class="alert alert-danger">'+(res.error||'Error saving folder')+'</div>'; }
+}
+async function deleteFolder() {
+  var id = document.getElementById('fm_id').value;
+  if (!id||!confirm('Delete this folder? Orders will be unlinked but not deleted.')) return;
+  await fetch('/api/folders/'+id,{method:'DELETE'});
+  closeModal('folderModal'); currentFolderId=null; await loadFolders(); showPage('folders');
+}
+
+// MOVE TO FOLDER
+function openMoveFolderModal(orderId, orderNum, currentFolderId) {
+  document.getElementById('mf_order_id').value = orderId;
+  document.getElementById('mf_order_label').textContent = 'Order: '+orderNum;
+  var sel = document.getElementById('mf_folder_id');
+  sel.innerHTML = '<option value="">— No Folder —</option>' + allFolders.map(function(f){ return '<option value="'+f.id+'"'+(f.id==currentFolderId?' selected':'')+'>'+f.name+(f.job_number?' ('+f.job_number+')':'')+'</option>'; }).join('');
+  updateFolderPreview(currentFolderId);
+  openModal('moveFolderModal');
+}
+function updateFolderPreview(folderId) {
+  var el = document.getElementById('mf_folder_preview');
+  if (!folderId) { el.innerHTML=''; return; }
+  var f = allFolders.find(function(x){ return x.id==folderId; });
+  if (!f) { el.innerHTML=''; return; }
+  var c = f.color||'#1e3a5f';
+  el.innerHTML = '<div style="background:'+c+'11;border:1px solid '+c+'33;border-radius:8px;padding:10px 14px;">'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><i class="fas fa-folder" style="color:'+c+';font-size:1.1rem;"></i><strong style="color:'+c+';">'+f.name+'</strong>'+(f.job_number?'<span style="font-size:.75rem;color:var(--muted);">#'+f.job_number+'</span>':'')+'</div>'
+    +(f.address?'<div style="font-size:.78rem;color:var(--muted);"><i class="fas fa-map-marker-alt"></i> '+f.address+(f.city?', '+f.city:'')+'</div>':'')
+    +'</div>';
+}
+async function confirmMoveFolder() {
+  var orderId = document.getElementById('mf_order_id').value;
+  var folderId = document.getElementById('mf_folder_id').value||null;
+  var order = await fetch('/api/orders/'+orderId).then(function(r){ return r.json(); });
+  var payload = {supplier_name:order.supplier_name,site_location:order.site_location||'',ordered_by:order.ordered_by||'',order_date:order.order_date,expected_delivery:order.expected_delivery||'',status:order.status,notes:order.notes||'',folder_id:folderId};
+  var res = await fetch('/api/orders/'+orderId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(function(r){ return r.json(); });
+  if (res.success) { closeModal('moveFolderModal'); loadOrders(); loadFolders(); }
+}
+
+// INIT
+loadDashboard();
+loadFolders();
+</script>
+</body>
+</html>

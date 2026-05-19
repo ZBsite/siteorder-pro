@@ -20,9 +20,17 @@ import pdfplumber
 app = Flask(__name__)
 CORS(app)
 
-DATA_DIR = os.environ.get('RAILWAY_VOLUME_MOUNT_PATH', os.path.dirname(os.path.abspath(__file__)))
+_app_dir = os.path.dirname(os.path.abspath(__file__))
+_volume = os.environ.get('RAILWAY_VOLUME_MOUNT_PATH', '')
+if _volume and os.path.isdir(_volume):
+    DATA_DIR = _volume
+elif os.access(_app_dir, os.W_OK):
+    DATA_DIR = _app_dir
+else:
+    DATA_DIR = '/tmp'
 DB_PATH = os.path.join(DATA_DIR, 'construction_orders.db')
 UPLOAD_DIR = os.path.join(DATA_DIR, 'uploads')
+print(f"[startup] DATA_DIR={DATA_DIR}", flush=True)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_DIR
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
@@ -781,11 +789,21 @@ def download_excel_template():
     return send_file(buf, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                      as_attachment=True, download_name='order_import_template.xlsx')
 
+# Run on import (gunicorn) and direct execution
+def _startup():
+    try:
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        os.makedirs(os.path.join(UPLOAD_DIR, 'attachments'), exist_ok=True)
+        os.makedirs(os.path.join(UPLOAD_DIR, 'imports'), exist_ok=True)
+        init_db()
+        print("[startup] Database initialized OK", flush=True)
+    except Exception as e:
+        print(f"[startup] ERROR: {e}", flush=True)
+        import traceback; traceback.print_exc()
+
+_startup()
+
 if __name__ == '__main__':
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
-    os.makedirs(os.path.join(UPLOAD_DIR, 'attachments'), exist_ok=True)
-    os.makedirs(os.path.join(UPLOAD_DIR, 'imports'), exist_ok=True)
-    init_db()
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('FLASK_ENV') == 'development'
     app.run(host='0.0.0.0', port=port, debug=debug)

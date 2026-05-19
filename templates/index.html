@@ -734,7 +734,9 @@ async function deleteOrder(id, num) {
 }
 
 // NEW ORDER
-function openNewOrderModal() {
+async function openNewOrderModal() {
+  // Refresh folders in case new ones were added
+  await loadFolders();
   document.getElementById('no_order_date').value = new Date().toISOString().split('T')[0];
   document.getElementById('newOrderAlert').innerHTML = '';
   openModal('newOrderModal');

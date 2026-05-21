@@ -122,12 +122,12 @@ def init_db():
         try:
             if col == 'folder_id':
                 c.execute('ALTER TABLE orders ADD COLUMN folder_id INTEGER REFERENCES job_folders(id)')
-    try:
-        c.execute('ALTER TABLE deliveries ADD COLUMN photo_data TEXT')
-    except: pass
             else:
                 c.execute(f'ALTER TABLE order_items ADD COLUMN {col} {defval}')
         except: pass
+    try:
+        c.execute('ALTER TABLE deliveries ADD COLUMN photo_data TEXT')
+    except: pass
     conn.commit()
     conn.close()
 

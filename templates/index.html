@@ -347,8 +347,21 @@ textarea.form-control{resize:vertical;}
       <div style="margin-top:8px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
           <label class="form-label" style="margin:0;">Order Items *</label>
-          <button class="btn btn-outline btn-sm" onclick="addItemRow()"><i class="fas fa-plus"></i> Add Item</button>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('newOrderExcelInput').click()" title="Import items from Excel/PDF"><i class="fas fa-file-import"></i> Import from Excel</button>
+            <button class="btn btn-outline btn-sm" onclick="addItemRow()"><i class="fas fa-plus"></i> Add Item</button>
+          </div>
         </div>
+        <div id="newOrderDropZone" style="border:2px dashed var(--border);border-radius:8px;padding:14px;text-align:center;cursor:pointer;background:#fafbfc;margin-bottom:8px;font-size:.82rem;color:var(--muted);"
+             onclick="document.getElementById('newOrderExcelInput').click()"
+             ondragover="event.preventDefault();this.style.borderColor='var(--primary)';this.style.background='#eff6ff';"
+             ondragleave="this.style.borderColor='var(--border)';this.style.background='#fafbfc';"
+             ondrop="handleNewOrderDrop(event)">
+          <i class="fas fa-file-excel" style="color:#10b981;margin-right:6px;"></i>
+          Drag & drop Excel / MTECH form here to auto-fill items
+          <input type="file" id="newOrderExcelInput" accept=".xlsx,.xls,.pdf" style="display:none;" onchange="handleNewOrderFile(this.files[0])"/>
+        </div>
+        <div id="newOrderImportAlert" style="margin-bottom:6px;"></div>
         <div style="overflow-x:auto;">
           <table class="items-table">
             <thead><tr><th>Item Name</th><th>Description</th><th>Qty</th><th>Unit</th><th>Unit Price</th><th></th></tr></thead>
@@ -735,6 +748,80 @@ async function viewOrder(id) {
 }
 
 
+
+// ── NEW ORDER EXCEL IMPORT ────────────────────────────────────────────────────
+function handleNewOrderDrop(e) {
+  e.preventDefault();
+  document.getElementById('newOrderDropZone').style.borderColor = 'var(--border)';
+  document.getElementById('newOrderDropZone').style.background = '#fafbfc';
+  var file = e.dataTransfer.files[0];
+  if (file) handleNewOrderFile(file);
+}
+
+async function handleNewOrderFile(file) {
+  if (!file) return;
+  var ext = file.name.split('.').pop().toLowerCase();
+  if (!['xlsx','xls','pdf'].includes(ext)) {
+    document.getElementById('newOrderImportAlert').innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Only .xlsx, .xls, .pdf supported.</div>';
+    return;
+  }
+  document.getElementById('newOrderImportAlert').innerHTML = '<div class="alert alert-success"><i class="fas fa-spinner fa-spin"></i> Parsing file...</div>';
+  var fd = new FormData();
+  fd.append('file', file);
+  try {
+    var data = await fetch('/api/import/preview', {method:'POST', body:fd}).then(function(r){ return r.json(); });
+    if (data.error) {
+      document.getElementById('newOrderImportAlert').innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> ' + data.error + '</div>';
+      return;
+    }
+    if (!data.orders || !data.orders.length) {
+      document.getElementById('newOrderImportAlert').innerHTML = '<div class="alert alert-danger">No orders detected in file.</div>';
+      return;
+    }
+    // Use first order's data to fill in the form header
+    var firstOrder = data.orders[0];
+    if (firstOrder.supplier_name && !document.getElementById('no_supplier').value) {
+      document.getElementById('no_supplier').value = firstOrder.supplier_name;
+    }
+    if (firstOrder.site_location && !document.getElementById('no_site').value) {
+      document.getElementById('no_site').value = firstOrder.site_location;
+    }
+    if (firstOrder.ordered_by && !document.getElementById('no_ordered_by').value) {
+      document.getElementById('no_ordered_by').value = firstOrder.ordered_by;
+    }
+    if (firstOrder.order_date) {
+      document.getElementById('no_order_date').value = firstOrder.order_date;
+    }
+    if (firstOrder.expected_delivery) {
+      document.getElementById('no_exp_delivery').value = firstOrder.expected_delivery;
+    }
+    if (firstOrder.notes && !document.getElementById('no_notes').value) {
+      document.getElementById('no_notes').value = firstOrder.notes;
+    }
+    // Collect ALL items from ALL parsed orders
+    var allItems = [];
+    data.orders.forEach(function(o){ allItems = allItems.concat(o.items || []); });
+    // Clear existing rows and populate with imported items
+    var tbody = document.getElementById('newItemsBody');
+    tbody.innerHTML = '';
+    allItems.forEach(function(item) {
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td><input class="item-name" value="' + (item.item_name||'').replace(/"/g,'&quot;') + '"/></td>'
+        + '<td><input value="' + (item.description||'').replace(/"/g,'&quot;') + '"/></td>'
+        + '<td><input type="number" class="item-qty" value="' + (item.quantity_ordered||1) + '" min="0" style="width:70px;"/></td>'
+        + '<td><select class="item-unit"><option>' + (item.unit||'units') + '</option><option>units</option><option>bags</option><option>tonnes</option><option>m3</option><option>pieces</option><option>lengths</option><option>sheets</option><option>kg</option><option>litres</option><option>m2</option></select></td>'
+        + '<td><input type="number" class="item-price" value="' + (item.unit_price||0) + '" min="0" step="0.01" style="width:80px;"/></td>'
+        + '<td><button class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>';
+      tbody.appendChild(tr);
+    });
+    document.getElementById('newOrderImportAlert').innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle"></i> <strong>' + allItems.length + ' items</strong> imported from ' + file.name + '. Review and adjust before saving.</div>';
+    // Hide drop zone
+    document.getElementById('newOrderDropZone').style.display = 'none';
+  } catch(e) {
+    document.getElementById('newOrderImportAlert').innerHTML = '<div class="alert alert-danger">Error: ' + e.message + '</div>';
+  }
+}
+
 function deleteOrderClick(btn) {
   var id = btn.getAttribute('data-oid');
   var num = btn.getAttribute('data-onum');
@@ -767,6 +854,9 @@ async function openNewOrderModal() {
   await loadFolders();
   document.getElementById('no_order_date').value = new Date().toISOString().split('T')[0];
   document.getElementById('newOrderAlert').innerHTML = '';
+  document.getElementById('newOrderImportAlert').innerHTML = '';
+  document.getElementById('newOrderDropZone').style.display = '';
+  document.getElementById('newOrderExcelInput').value = '';
   openModal('newOrderModal');
 }
 function addItemRow() {

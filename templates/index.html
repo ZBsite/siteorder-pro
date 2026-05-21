@@ -981,10 +981,18 @@ async function submitDelivery() {
   var fullNotes = [baseNotes,docket?'Docket: '+docket:'',condition?'Condition: '+condition:''].filter(Boolean).join(' | ');
   fd.append('delivery_notes',fullNotes);
   fd.append('items_json',JSON.stringify(items));
-  var photo = document.getElementById('del_photo').files[0];
-  if (photo) fd.append('photo',photo);
+  var photoFiles = document.getElementById('del_photo').files;
+  if (photoFiles && photoFiles.length > 0) fd.append('photo', photoFiles[0]);
   var res = await fetch('/api/orders/'+orderId+'/deliver',{method:'POST',body:fd}).then(function(r){ return r.json(); });
-  if (res.success) { closeModal('deliveryModal'); loadOrders(); alert('Delivery recorded! Order status: '+res.order_status); }
+  if (res.success) {
+    closeModal('deliveryModal');
+    loadOrders();
+    var boTbody = document.getElementById('backordersTableBody');
+    if (boTbody) loadBackorders();
+    alert('Delivery recorded! Order status: '+res.order_status);
+  } else {
+    document.getElementById('deliveryAlert').innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Error: '+(res.error||'Unknown error')+'</div>';
+  }
 }
 
 // BACKORDERS

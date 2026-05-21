@@ -102,6 +102,7 @@ def init_db():
         received_by TEXT,
         delivery_notes TEXT,
         photo_path TEXT,
+        photo_data TEXT,
         created_at TEXT DEFAULT (datetime(\'now\')),
         FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
     )''')
@@ -121,6 +122,9 @@ def init_db():
         try:
             if col == 'folder_id':
                 c.execute('ALTER TABLE orders ADD COLUMN folder_id INTEGER REFERENCES job_folders(id)')
+    try:
+        c.execute('ALTER TABLE deliveries ADD COLUMN photo_data TEXT')
+    except: pass
             else:
                 c.execute(f'ALTER TABLE order_items ADD COLUMN {col} {defval}')
         except: pass
@@ -276,10 +280,10 @@ def record_delivery(order_id):
             os.makedirs(photo_dir, exist_ok=True)
             file.save(os.path.join(photo_dir, filename))
             photo_path = f"uploads/photos/{filename}"
-    c.execute('''INSERT INTO deliveries (order_id,delivery_date,received_by,delivery_notes,photo_path)
-                 VALUES (?,?,?,?,?)''',
+    c.execute('''INSERT INTO deliveries (order_id,delivery_date,received_by,delivery_notes,photo_path,photo_data)
+                 VALUES (?,?,?,?,?,?)''',
               (order_id, request.form.get('delivery_date', datetime.now().strftime('%Y-%m-%d')),
-               request.form.get('received_by',''), request.form.get('delivery_notes',''), photo_path))
+               request.form.get('received_by',''), request.form.get('delivery_notes',''), photo_path, photo_data))
     items = json.loads(request.form.get('items_json','[]'))
     for item in items:
         c.execute("SELECT quantity_ordered,quantity_received FROM order_items WHERE id=?", (item['id'],))

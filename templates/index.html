@@ -429,9 +429,19 @@ textarea.form-control{resize:vertical;}
           </select>
         </div>
       </div>
-      <div class="form-group"><label class="form-label">Delivery Photo (optional)</label>
-        <input class="form-control" type="file" id="del_photo" accept="image/*" onchange="previewPhoto(this)"/>
-        <img id="photoPreview" src="" alt="Preview" style="display:none;width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin-top:8px;"/>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-camera" style="color:var(--info)"></i> Delivery Photos</label>
+        <div id="photoDropZone" style="border:2px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;background:#fafbfc;transition:.2s;"
+             onclick="document.getElementById('del_photo').click()"
+             ondragover="event.preventDefault();this.style.borderColor='var(--primary)'"
+             ondragleave="this.style.borderColor='var(--border)'"
+             ondrop="handlePhotoDrop(event)">
+          <i class="fas fa-camera" style="font-size:1.5rem;color:var(--muted);display:block;margin-bottom:6px;"></i>
+          <div style="font-size:.85rem;font-weight:500;">Tap to take photo or upload</div>
+          <div style="font-size:.75rem;color:var(--muted);">Drag & drop or click to browse</div>
+          <input class="form-control" type="file" id="del_photo" accept="image/*" capture="environment" style="display:none;" onchange="previewPhoto(this)" multiple/>
+        </div>
+        <div id="photoPreviewContainer" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>
       </div>
       <div>
         <label class="form-label">Quantities Received & Item Notes</label>
@@ -722,7 +732,8 @@ async function viewOrder(id) {
       deliveriesHtml += '<div class="delivery-item">'
         +'<div class="meta"><i class="fas fa-calendar"></i> '+d.delivery_date+' &bull; Received by: <strong>'+(d.received_by||'—')+'</strong></div>'
         +'<div style="font-size:.85rem;">'+(d.delivery_notes||'No notes')+'</div>';
-      if (d.photo_path) deliveriesHtml += '<img src="/'+d.photo_path+'" style="width:80px;height:60px;object-fit:cover;border-radius:6px;margin-top:8px;cursor:pointer;" onclick="window.open(this.src)"/>';
+      var photoSrc = d.photo_data || (d.photo_path ? '/'+d.photo_path : null);
+      if (photoSrc) deliveriesHtml += '<img src="'+photoSrc+'" style="width:120px;height:90px;object-fit:cover;border-radius:8px;margin-top:8px;cursor:pointer;border:2px solid var(--border);" onclick="window.open(this.src)" title="Click to view full size"/>';
       deliveriesHtml += '</div>';
     });
     deliveriesHtml += '</div>';
@@ -919,7 +930,8 @@ async function openDeliveryModal(orderId) {
   document.getElementById('del_docket').value = '';
   document.getElementById('del_condition').value = '';
   document.getElementById('del_photo').value = '';
-  document.getElementById('photoPreview').style.display = 'none';
+  var ppc = document.getElementById('photoPreviewContainer');
+  if (ppc) ppc.innerHTML = '';
   document.getElementById('deliveryAlert').innerHTML = '';
   var tbody = document.getElementById('deliveryItemsBody');
   tbody.innerHTML = (o.items||[]).map(function(i){

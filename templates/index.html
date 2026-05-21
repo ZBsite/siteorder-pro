@@ -734,6 +734,27 @@ async function viewOrder(id) {
   openModal('orderDetailModal');
 }
 
+
+function deleteOrderClick(btn) {
+  var id = btn.getAttribute('data-oid');
+  var num = btn.getAttribute('data-onum');
+  deleteOrder(id, num);
+}
+
+async function moveFolderClick(btn) {
+  var orderId = btn.getAttribute('data-oid');
+  var folderId = btn.getAttribute('data-fid') || null;
+  await loadFolders();
+  var sel = document.getElementById('mf_folder_id');
+  sel.innerHTML = '<option value="">No Folder</option>' + allFolders.map(function(f){
+    return '<option value="'+f.id+'"'+(String(f.id)===String(folderId)?' selected':'')+'>'+f.name+(f.job_number?' ('+f.job_number+')':'')+'</option>';
+  }).join('');
+  document.getElementById('mf_order_id').value = orderId;
+  document.getElementById('mf_order_label').textContent = 'Select folder for this order:';
+  document.getElementById('mf_folder_preview').innerHTML = '';
+  openModal('moveFolderModal');
+}
+
 async function deleteOrder(id, num) {
   if (!confirm('Delete order '+num+'? This cannot be undone.')) return;
   await fetch('/api/orders/'+id, {method:'DELETE'});

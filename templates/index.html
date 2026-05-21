@@ -823,6 +823,18 @@ async function handleNewOrderFile(file) {
   }
 }
 
+
+function viewOrderDeliver(btn) {
+  var id = btn.getAttribute('data-oid');
+  closeModal('orderDetailModal');
+  openDeliveryModal(id);
+}
+function viewOrderAttach(btn) {
+  var id = btn.getAttribute('data-oid');
+  closeModal('orderDetailModal');
+  openAttachMergeModal(id);
+}
+
 function deleteOrderClick(btn) {
   var id = btn.getAttribute('data-oid');
   var num = btn.getAttribute('data-onum');
@@ -982,7 +994,7 @@ async function loadBackorders() {
 
 function boRowDblClick(row) {
   var orderId = row.getAttribute('data-order-id');
-  viewOrder(orderId);
+  openDeliveryModal(orderId);
 }
 
 function boRowClick(event, row) {

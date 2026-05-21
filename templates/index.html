@@ -947,6 +947,14 @@ async function openDeliveryModal(orderId) {
   }).join('');
   openModal('deliveryModal');
 }
+function handlePhotoDrop(e) {
+  e.preventDefault();
+  document.getElementById('photoDropZone').style.borderColor = 'var(--border)';
+  if (e.dataTransfer.files.length > 0) {
+    document.getElementById('del_photo').files = e.dataTransfer.files;
+    previewPhoto({files: e.dataTransfer.files});
+  }
+}
 function previewPhoto(input) {
   var preview = document.getElementById('photoPreview');
   if (input.files && input.files[0]) {

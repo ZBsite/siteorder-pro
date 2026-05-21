@@ -200,6 +200,7 @@ textarea.form-control{resize:vertical;}
           <span class="card-title"><i class="fas fa-exclamation-triangle" style="color:var(--danger)"></i> Back Orders & Pending Items</span>
           <button class="btn btn-outline btn-sm" onclick="loadBackorders()"><i class="fas fa-sync"></i> Refresh</button>
         </div>
+        <p style="font-size:.8rem;color:var(--muted);margin-bottom:8px;"><i class="fas fa-info-circle"></i> <strong>Click</strong> a row to update received quantity &bull; <strong>Double-click</strong> to open the full order</p>
         <div class="table-wrap">
           <table>
             <thead><tr>
@@ -964,19 +965,77 @@ async function loadBackorders() {
     var outstanding = i.quantity_ordered - i.quantity_received;
     var pct = i.quantity_ordered>0 ? Math.round((i.quantity_received/i.quantity_ordered)*100) : 0;
     var noteHtml = i.delivery_note ? '<br><span style="font-size:.72rem;color:var(--info);"><i class=\"fas fa-sticky-note\"></i> '+i.delivery_note+'</span>' : '';
-    return '<tr>'
+    return '<tr style="cursor:pointer;" data-item-id="'+i.id+'" data-order-id="'+i.order_id+'" data-order-num="'+i.order_number+'" data-qty-ordered="'+i.quantity_ordered+'" data-qty-received="'+i.quantity_received+'" data-unit="'+i.unit+'" onclick="boRowClick(event,this)" ondblclick="boRowDblClick(this)">'
       +'<td><strong>'+i.order_number+'</strong></td>'
       +'<td>'+i.supplier_name+'</td>'
       +'<td>'+(i.site_location||'—')+'</td>'
       +'<td>'+i.item_name+noteHtml+'</td>'
       +'<td>'+i.quantity_ordered+' '+i.unit+'</td>'
-      +'<td>'+i.quantity_received+' '+i.unit+'</td>'
-      +'<td><strong style="color:var(--danger);">'+outstanding+' '+i.unit+'</strong></td>'
-      +'<td style="min-width:100px;"><div class="progress"><div class="progress-bar" style="width:'+pct+'%;background:'+(barColors[i.status]||'var(--info)')+'"></div></div><span style="font-size:.7rem;color:var(--muted);">'+pct+'%</span></td>'
+      +'<td class="bo-received-cell">'+i.quantity_received+' '+i.unit+'</td>'
+      +'<td class="bo-outstanding-cell"><strong style="color:var(--danger);">'+outstanding+' '+i.unit+'</strong></td>'
+      +'<td style="min-width:100px;" class="bo-progress-cell"><div class="progress"><div class="progress-bar" style="width:'+pct+'%;background:'+(barColors[i.status]||'var(--info)')+'"></div></div><span style="font-size:.7rem;color:var(--muted);">'+pct+'%</span></td>'
       +'<td>'+(i.expected_delivery||'—')+'</td>'
-      +'<td>'+badge(i.status)+'</td>'
+      +'<td class="bo-status-cell">'+badge(i.status)+'</td>'
       +'</tr>';
   }).join('');
+}
+
+function boRowDblClick(row) {
+  var orderId = row.getAttribute('data-order-id');
+  viewOrder(orderId);
+}
+
+function boRowClick(event, row) {
+  // Don't trigger if clicking on an input
+  if (event.target.tagName === 'INPUT' || event.target.tagName === 'BUTTON') return;
+  // If already in edit mode, ignore
+  if (row.classList.contains('bo-editing')) return;
+  row.classList.add('bo-editing');
+  var itemId = row.getAttribute('data-item-id');
+  var orderId = row.getAttribute('data-order-id');
+  var qtyOrdered = parseFloat(row.getAttribute('data-qty-ordered'));
+  var qtyReceived = parseFloat(row.getAttribute('data-qty-received'));
+  var unit = row.getAttribute('data-unit');
+  var remaining = qtyOrdered - qtyReceived;
+  // Replace received cell with input
+  var rcvCell = row.querySelector('.bo-received-cell');
+  rcvCell.innerHTML = '<div style="display:flex;align-items:center;gap:4px;">'
+    + '<input type="number" id="bo-input-'+itemId+'" value="0" min="0" max="'+remaining+'" style="width:70px;padding:4px 6px;border:1px solid var(--primary);border-radius:6px;font-size:.82rem;text-align:center;" onclick="event.stopPropagation()" />'
+    + '<span style="font-size:.78rem;color:var(--muted);">'+unit+'</span>'
+    + '</div>';
+  // Add note input
+  var outCell = row.querySelector('.bo-outstanding-cell');
+  outCell.innerHTML = '<input type="text" id="bo-note-'+itemId+'" placeholder="Note (optional)" style="width:120px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:.78rem;" onclick="event.stopPropagation()" />';
+  // Replace status cell with save/cancel buttons
+  var statusCell = row.querySelector('.bo-status-cell');
+  statusCell.innerHTML = '<div style="display:flex;gap:4px;">'
+    + '<button class="btn btn-success btn-sm" onclick="event.stopPropagation();saveBoUpdate(''+itemId+'',''+orderId+'')" title="Save"><i class="fas fa-check"></i></button>'
+    + '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();loadBackorders()" title="Cancel"><i class="fas fa-times"></i></button>'
+    + '</div>';
+  // Focus the input
+  setTimeout(function(){ var inp = document.getElementById('bo-input-'+itemId); if(inp) inp.focus(); }, 50);
+}
+
+async function saveBoUpdate(itemId, orderId) {
+  var inp = document.getElementById('bo-input-'+itemId);
+  var noteInp = document.getElementById('bo-note-'+itemId);
+  var qtyNew = parseFloat(inp ? inp.value : 0) || 0;
+  var note = noteInp ? noteInp.value.trim() : '';
+  if (qtyNew <= 0) { loadBackorders(); return; }
+  // Record delivery for just this item
+  var fd = new FormData();
+  fd.append('delivery_date', new Date().toISOString().split('T')[0]);
+  fd.append('received_by', '');
+  fd.append('delivery_notes', note ? 'Backorder update: ' + note : 'Backorder quantity update');
+  fd.append('items_json', JSON.stringify([{id: parseInt(itemId), qty_received: qtyNew, note: note}]));
+  var res = await fetch('/api/orders/'+orderId+'/deliver', {method:'POST', body:fd}).then(function(r){ return r.json(); });
+  if (res.success) {
+    loadBackorders();
+    loadOrders();
+  } else {
+    alert('Error saving: ' + (res.error || 'Unknown error'));
+    loadBackorders();
+  }
 }
 
 // EXPORT

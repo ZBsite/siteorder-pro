@@ -1008,10 +1008,23 @@ function boRowClick(event, row) {
   outCell.innerHTML = '<input type="text" id="bo-note-'+itemId+'" placeholder="Note (optional)" style="width:120px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:.78rem;" onclick="event.stopPropagation()" />';
   // Replace status cell with save/cancel buttons
   var statusCell = row.querySelector('.bo-status-cell');
-  statusCell.innerHTML = '<div style="display:flex;gap:4px;">'
-    + '<button class="btn btn-success btn-sm" onclick="event.stopPropagation();saveBoUpdate(''+itemId+'',''+orderId+'')" title="Save"><i class="fas fa-check"></i></button>'
-    + '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();loadBackorders()" title="Cancel"><i class="fas fa-times"></i></button>'
-    + '</div>';
+  var statusCell = row.querySelector('.bo-status-cell');
+  statusCell.innerHTML = '';
+  var sbWrap = document.createElement('div');
+  sbWrap.style.cssText = 'display:flex;gap:4px;';
+  var sbSave = document.createElement('button');
+  sbSave.className = 'btn btn-success btn-sm';
+  sbSave.title = 'Save';
+  sbSave.innerHTML = '<i class="fas fa-check"></i>';
+  (function(iid,oid){ sbSave.onclick = function(e){ e.stopPropagation(); saveBoUpdate(iid,oid); }; })(itemId,orderId);
+  var sbCancel = document.createElement('button');
+  sbCancel.className = 'btn btn-outline btn-sm';
+  sbCancel.title = 'Cancel';
+  sbCancel.innerHTML = '<i class="fas fa-times"></i>';
+  sbCancel.onclick = function(e){ e.stopPropagation(); loadBackorders(); };
+  sbWrap.appendChild(sbSave);
+  sbWrap.appendChild(sbCancel);
+  statusCell.appendChild(sbWrap);
   // Focus the input
   setTimeout(function(){ var inp = document.getElementById('bo-input-'+itemId); if(inp) inp.focus(); }, 50);
 }
